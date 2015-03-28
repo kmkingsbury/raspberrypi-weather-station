@@ -1,0 +1,36 @@
+
+Install Image:
+2015-02-16-raspbian-wheezy.img
+
+Add Camera support
+
+Connect to network
+sudo apt-get install apache2
+update-rc.d apache2 enable
+
+sudo apt-get install php5
+sudo apt-get install rrdtool
+sudo apt-get install gpsd gpsd-clients python-gps
+
+mkdir /var/www/images
+mkdir /var/www/css
+mkdir /var/www/photos
+
+rrdtool create weatherdata.rrd --step 1 \
+DS:temperature:GAUGE:2:-50:100 \
+DS:humidity:GAUGE:2:0:100 \
+DS:light:GAUGE:2:0:255 \
+DS:winddir:GAUGE:2:0:360 \
+DS:windspeed:GAUGE:2:0:100 \
+DS:pressure:GAUGE:2:50000:200000 \
+DS:rain:GAUGE:2:0:10 \
+RRA:AVERAGE:0.5:1:43200 \
+RRA:MIN:0.5:1:43200 \
+RRA:MAX:0.5:1:43200 \
+RRA:AVERAGE:0.5:60:43200 \
+RRA:MIN:0.5:60:43200 \
+RRA:MAX:0.5:60:43200 \
+RRA:AVERAGE:0.5:60:43800 \
+RRA:MIN:0.5:60:43800 \
+RRA:MAX:0.5:60:43800 
+
