@@ -3,6 +3,11 @@ Install Image:
 2015-02-16-raspbian-wheezy.img
 
 Add Camera support
+make a movie how-to here: http://ubuntuforums.org/showthread.php?t=2022316
+# m h  dom mon dow   command
+* * * * * /usr/bin/touch /var/www/photos/photo.`date +\%Y.\%m.\%d-\%H.\%M`.jpg
+
+
 
 Connect to network
 sudo apt-get install apache2
@@ -33,4 +38,28 @@ RRA:MAX:0.5:60:43200 \
 RRA:AVERAGE:0.5:60:43800 \
 RRA:MIN:0.5:60:43800 \
 RRA:MAX:0.5:60:43800 
+
+
+rrdtool create wundergrounddata.rrd --step 300 \
+DS:temperature:GAUGE:600:-50:100 \
+DS:humidity:GAUGE:600:0:100 \
+DS:winddir:GAUGE:600:0:100 \
+DS:windspeed:GAUGE:600:0:100 \
+DS:pressure:GAUGE:600:50000:200000 \
+DS:rain:GAUGE:600:0:10 \
+RRA:AVERAGE:0.5:1:1440 \
+RRA:MIN:0.5:1:1440 \
+RRA:MAX:0.5:1:1440 \
+RRA:AVERAGE:0.5:30:17520 \
+RRA:MIN:0.5:30:17520 \
+RRA:MAX:0.5:30:17520
+
+
+Weather Underground JSON/API (Austin, TX)
+http://api.wunderground.com/api/<apikey>/conditions/q/zmw:78701.1.99999.json
+
+For These read the file, evry 24 hrs update the file via a cron
+Astronomy for sunrise /sunset and moon.
+Tides.
+Almanac for High/Low Records.
 

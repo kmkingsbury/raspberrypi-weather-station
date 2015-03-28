@@ -1,0 +1,94 @@
+
+{
+  "response": {
+  "version":"0.1",
+  "termsofService":"http://www.wunderground.com/weather/api/d/terms.html",
+  "features": {
+  "conditions": 1
+  }
+	}
+  ,	"current_observation": {
+		"image": {
+		"url":"http://icons.wxug.com/graphics/wu2/logo_130x80.png",
+		"title":"Weather Underground",
+		"link":"http://www.wunderground.com"
+		},
+		"display_location": {
+		"full":"Austin, TX",
+		"city":"Austin",
+		"state":"TX",
+		"state_name":"Texas",
+		"country":"US",
+		"country_iso3166":"US",
+		"zip":"78701",
+		"magic":"1",
+		"wmo":"99999",
+		"latitude":"30.27115822",
+		"longitude":"-97.74169922",
+		"elevation":"167.00000000"
+		},
+		"observation_location": {
+		"full":"Thermal Lab Facility, CSD, Austin, Texas",
+		"city":"Thermal Lab Facility, CSD, Austin",
+		"state":"Texas",
+		"country":"US",
+		"country_iso3166":"US",
+		"latitude":"30.285278",
+		"longitude":"-97.741112",
+		"elevation":"600 ft"
+		},
+		"estimated": {
+		},
+		"station_id":"KTXAUSTI211",
+		"observation_time":"Last Updated on March 28, 6:56 AM CDT",
+		"observation_time_rfc822":"Sat, 28 Mar 2015 06:56:22 -0500",
+		"observation_epoch":"1427543782",
+		"local_time_rfc822":"Sat, 28 Mar 2015 06:56:52 -0500",
+		"local_epoch":"1427543812",
+		"local_tz_short":"CDT",
+		"local_tz_long":"America/Chicago",
+		"local_tz_offset":"-0500",
+		"weather":"Clear",
+		"temperature_string":"54.2 F (12.3 C)",
+		"temp_f":54.2,
+		"temp_c":12.3,
+		"relative_humidity":"77%",
+		"wind_string":"Calm",
+		"wind_dir":"East",
+		"wind_degrees":90,
+		"wind_mph":0.0,
+		"wind_gust_mph":0,
+		"wind_kph":0,
+		"wind_gust_kph":0,
+		"pressure_mb":"1020",
+		"pressure_in":"30.12",
+		"pressure_trend":"0",
+		"dewpoint_string":"47 F (8 C)",
+		"dewpoint_f":47,
+		"dewpoint_c":8,
+		"heat_index_string":"NA",
+		"heat_index_f":"NA",
+		"heat_index_c":"NA",
+		"windchill_string":"NA",
+		"windchill_f":"NA",
+		"windchill_c":"NA",
+		"feelslike_string":"54.2 F (12.3 C)",
+		"feelslike_f":"54.2",
+		"feelslike_c":"12.3",
+		"visibility_mi":"10.0",
+		"visibility_km":"16.1",
+		"solarradiation":"0",
+		"UV":"0","precip_1hr_string":"0.00 in ( 0 mm)",
+		"precip_1hr_in":"0.00",
+		"precip_1hr_metric":" 0",
+		"precip_today_string":"0.00 in (0 mm)",
+		"precip_today_in":"0.00",
+		"precip_today_metric":"0",
+		"icon":"clear",
+		"icon_url":"http://icons.wxug.com/i/c/k/nt_clear.gif",
+		"forecast_url":"http://www.wunderground.com/US/TX/Austin.html",
+		"history_url":"http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=KTXAUSTI211",
+		"ob_url":"http://www.wunderground.com/cgi-bin/findweather/getForecast?query=30.285278,-97.741112",
+		"nowcast":""
+	}
+}
