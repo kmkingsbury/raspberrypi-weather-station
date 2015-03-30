@@ -23,7 +23,7 @@ $graphstomake->extra = "GPRINT:{$graphstomake->datasourcename}:LAST:\" Current\:
 $graphstomake->color = "#33CC33";
 
 //Add in Hist
-$json = file_get_contents($configs{'history-file-location'});
+$json = file_get_contents($configs{'archive-location'}.$configs{'history-file'});
 $histobj = json_decode($json,true);
 if ( isset( $histobj['almanac']['temp_high']['normal']['F'] ) ) {
 

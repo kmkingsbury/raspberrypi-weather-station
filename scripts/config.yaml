@@ -17,6 +17,8 @@ wun-api-location-state: TX
 #z - zip code  #m - magic station No.  #w - wmo identifier 
 wun-api-location-zmw: 78701.1.99999  
 
+archive-location: "/var/www/html/archive/"
+history-file: "almanac_current.json"
+astronomy-file: "astronomy_current.json"
 
-history-file-location: "/var/www/html/archive/almanac_current.json"
- 
+

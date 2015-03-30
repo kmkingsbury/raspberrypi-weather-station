@@ -38,5 +38,9 @@ print "Pressure: $pressure\n";
 print "Rain: $rain\n"; 
 
 //update our RRD
-echo `/usr/bin/rrdtool update {$configs{'rrddb'}} N:$temp:$humidity:$winddir:$windspeed:$pressure:$rain`
+$call = "/usr/bin/rrdtool update {$configs{'rrddb'}} N:$temp:$humidity:$winddir:$windspeed:$pressure:$rain";
+print $call;
+print `$call`;
+
+//echo `/usr/bin/rrdtool update {$configs{'rrddb'}} N:$temp:$humidity:$winddir:$windspeed:$pressure:$rain`
 ?>
