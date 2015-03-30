@@ -39,6 +39,7 @@ include('includes/top.inc');
      <h3>Temperature:</h3><span style="display: block; text-align: right">
 <a href="#t" onclick="changeImage('wun/Temperature_1h.png?'+Math.random());">1h</a>
 <a href="#t" onclick="changeImage('wun/Temperature_1d.png?'+Math.random());">1d</a>
+<a href="#t" onclick="changeImage('wun/Temperature_7d.png?'+Math.random());">7d</a>
 <a href="#t" onclick="changeImage('wun/Temperature_30d.png?'+Math.random());">30d</a>
 <a href="#t" onclick="changeImage('wun/Temperature_1y.png?'+Math.random());">1y</a></span>
 <a name="t"><img src="wun/Temperature_1h.png" alt="Temperature Graph" id="imageReplace"/></a><br />
@@ -46,6 +47,7 @@ include('includes/top.inc');
      <h3>Humidity:</h3><span style="display: block; text-align: right">
 <a href="#h" onclick="changeImage2('wun/Humidity_1h.png?'+Math.random());">1h</a>
 <a href="#h" onclick="changeImage2('wun/Humidity_1d.png?'+Math.random());">1d</a>
+<a href="#h" onclick="changeImage2('wun/Humidity_7d.png?'+Math.random());">7d</a>
 <a href="#h" onclick="changeImage2('wun/Humidity_30d.png?'+Math.random());">30d</a>
 <a href="#h" onclick="changeImage2('wun/Humidity_1y.png?'+Math.random());">1y</a></span>
 <a name="h"><img src="wun/Humidity_1h.png" alt="Humidity Graph" id="imageReplace2"/></a><br />

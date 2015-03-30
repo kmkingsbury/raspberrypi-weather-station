@@ -1,15 +1,20 @@
 <?php
-$histurl = '/var/www/html/archive/almanac_current.json';
+$configs = yaml_parse_file ("./config.yaml");
+
+
+
+
 $width = 600;
+$days = array("1h", "1d", "7d", "30d", "1y");
 
 $queue = array();
 
 $graphstomake = new stdClass();
 $graphstomake->name = "Temperature";
-$graphstomake->datasource = "/usr/local/wun/wundergrounddata.rrd";
+$graphstomake->datasource = $configs{'rrddb'};
 $graphstomake->datasourcename = "temperature";
 $graphstomake->filenamesuffix = "temp";
-$graphstomake->timeframes = array("1h", "1d", "30d", "1y");
+$graphstomake->timeframes = $days;
 $graphstomake->opts = "";
 $graphstomake->extra = "GPRINT:{$graphstomake->datasourcename}:LAST:\" Current\:%8.2lf \"  \
 		        GPRINT:{$graphstomake->datasourcename}:AVERAGE:\"Average\:%8.2lf \"  \
@@ -18,7 +23,7 @@ $graphstomake->extra = "GPRINT:{$graphstomake->datasourcename}:LAST:\" Current\:
 $graphstomake->color = "#33CC33";
 
 //Add in Hist
-$json = file_get_contents($histurl);
+$json = file_get_contents($configs{'history-file-location'});
 $histobj = json_decode($json,true);
 if ( isset( $histobj['almanac']['temp_high']['normal']['F'] ) ) {
 
@@ -41,20 +46,20 @@ $queue[] = $graphstomake;
 
 $graphstomake = new stdClass();
 $graphstomake->name = "Humidity";
-$graphstomake->datasource = "/usr/local/wun/wundergrounddata.rrd";
+$graphstomake->datasource = $configs{'rrddb'};
 $graphstomake->datasourcename = "humidity";
 $graphstomake->filenamesuffix = "humidity";
-$graphstomake->timeframes = array("1h", "1d", "30d", "1y");
+$graphstomake->timeframes = $days;
 $graphstomake->opts = "--upper=100 --lower=0";
 $graphstomake->extra = "";
 $queue[] = $graphstomake;
 
 $graphstomake = new stdClass();
 $graphstomake->name = "Pressure";
-$graphstomake->datasource = "/usr/local/wun/wundergrounddata.rrd";
+$graphstomake->datasource = $configs{'rrddb'};
 $graphstomake->datasourcename = "pressure";
 $graphstomake->filenamesuffix = "pressure";
-$graphstomake->timeframes = array("1h", "1d", "30d", "1y");
+$graphstomake->timeframes = $days;
 $graphstomake->opts = "";
 $graphstomake->extra = "";
 $queue[] = $graphstomake;
@@ -62,30 +67,30 @@ $queue[] = $graphstomake;
 
 $graphstomake = new stdClass();
 $graphstomake->name = "winddir";
-$graphstomake->datasource = "/usr/local/wun/wundergrounddata.rrd";
+$graphstomake->datasource = $configs{'rrddb'};
 $graphstomake->datasourcename = "winddir";
 $graphstomake->filenamesuffix = "winddir";
-$graphstomake->timeframes = array("1h", "1d", "30d", "1y");
+$graphstomake->timeframes = $days;
 $graphstomake->opts = "";
 $graphstomake->extra = "";
 $queue[] = $graphstomake;
 
 $graphstomake = new stdClass();
 $graphstomake->name = "windspeed";
-$graphstomake->datasource = "/usr/local/wun/wundergrounddata.rrd";
+$graphstomake->datasource = $configs{'rrddb'};
 $graphstomake->datasourcename = "windspeed";
 $graphstomake->filenamesuffix = "windspeed";
-$graphstomake->timeframes = array("1h", "1d", "30d", "1y");
+$graphstomake->timeframes = $days;
 $graphstomake->opts = "";
 $graphstomake->extra = "";
 $queue[] = $graphstomake;
 
 $graphstomake = new stdClass();
 $graphstomake->name = "rain";
-$graphstomake->datasource = "/usr/local/wun/wundergrounddata.rrd";
+$graphstomake->datasource = $configs{'rrddb'};
 $graphstomake->datasourcename = "rain";
 $graphstomake->filenamesuffix = "rain";
-$graphstomake->timeframes = array("1h", "1d", "30d", "1y");
+$graphstomake->timeframes = $days;
 $graphstomake->opts = "";
 $graphstomake->extra = "";
 $queue[] = $graphstomake;
@@ -98,7 +103,7 @@ foreach ($queue as $o) {
      if (!isset($o->color)){
         $o->color = "#0000FF";
      }
- echo `/usr/bin/rrdtool graph /var/www/html/wun/{$o->name}_{$tf}.png \
+ echo `/usr/bin/rrdtool graph {$configs{'graph-location'}}{$o->name}_{$tf}.png \
    --width={$width} {$o->opts} \
    --title="{$o->name} (Last $tf)" \
    --start end-{$tf} \

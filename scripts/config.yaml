@@ -1,15 +1,22 @@
 ---
 # An employee record
 name: Example Developer
-job: Developer
-skill: Elite
-employed: True
-foods:
-   - Appl
-   - Orange
-   - Strawberry
-   - Mango
-languages:
-   ruby: Elite
-   python: Elite
-   dotnet: Lame
+
+#RRD DB Loc/Name
+rrddb: "/usr/local/wun/wundergrounddata.rrd"
+
+graph-location: "/var/www/html/wun/"
+
+
+use-wun: true
+wun-url: "http://api.wunderground.com/api/<api_key>/conditions/q/zmw:<zmw>.json"
+wun-api-keyfile: "/etc/wunapikey.txt"
+wun-api-location-city: Austin
+wun-api-location-state: TX
+
+#z - zip code  #m - magic station No.  #w - wmo identifier 
+wun-api-location-zmw: 78701.1.99999  
+
+
+history-file-location: "/var/www/html/archive/almanac_current.json"
+ 

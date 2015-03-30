@@ -1,13 +1,19 @@
 <?php
 #API
-$url = 'http://api.wunderground.com/api/<api_key>/conditions/q/zmw:78701.1.99999.json';
-$keyfile = '/etc/wunapikey.txt';
+$configs = yaml_parse_file ("./config.yaml");
+//var_dump($configs);
+//print $configs{'wun-url'};
+//$configs{'wun-url'};
+
+# These moved to config.yaml
+#$keyfile = '/etc/wunapikey.txt';
 #RRD DB Loc/Name
-$rrddb = "/usr/local/wun/wundergrounddata.rrd";
+#$rrddb = "/usr/local/wun/wundergrounddata.rrd";
 
 //Makr URL
-$apikey = trim(file_get_contents($keyfile));
-$url =  str_replace("<api_key>", $apikey, $url);
+$apikey = trim(file_get_contents($configs{'wun-api-keyfile'}));
+$url =  str_replace("<api_key>", $apikey, $configs{'wun-url'});
+$url =  str_replace("<zmw>", $configs{'wun-api-location-zmw'}, $url);
 //echo $url;
 
 //Make API call, decode as Array (true)
@@ -32,5 +38,5 @@ print "Pressure: $pressure\n";
 print "Rain: $rain\n"; 
 
 //update our RRD
-echo `/usr/bin/rrdtool update $rrddb N:$temp:$humidity:$winddir:$windspeed:$pressure:$rain`
+echo `/usr/bin/rrdtool update {$configs{'rrddb'}} N:$temp:$humidity:$winddir:$windspeed:$pressure:$rain`
 ?>
