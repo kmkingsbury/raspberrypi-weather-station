@@ -1,5 +1,5 @@
 <?php
-$histurl = '/tmp/almanac_Austin.json';
+$histurl = '/var/www/html/archive/almanac_current.json';
 $width = 600;
 
 $queue = array();
@@ -10,10 +10,11 @@ $graphstomake->datasource = "/usr/local/wun/wundergrounddata.rrd";
 $graphstomake->datasourcename = "temperature";
 $graphstomake->filenamesuffix = "temp";
 $graphstomake->timeframes = array("1h", "1d", "30d", "1y");
-$graphstomake->opts = "--upper=120 --lower=0";
+$graphstomake->opts = "";
 $graphstomake->extra = "GPRINT:{$graphstomake->datasourcename}:LAST:\" Current\:%8.2lf \"  \
 		        GPRINT:{$graphstomake->datasourcename}:AVERAGE:\"Average\:%8.2lf \"  \
-			GPRINT:{$graphstomake->datasourcename}:MAX:\"Maximum\:%8.2lf \\n\"  ";
+			GPRINT:{$graphstomake->datasourcename}:MAX:\"Maximum\:%8.2lf \" \
+ 			GPRINT:{$graphstomake->datasourcename}:MIN:\"Minimum\:%8.2lf \\n\"  "; 
 $graphstomake->color = "#33CC33";
 
 //Add in Hist

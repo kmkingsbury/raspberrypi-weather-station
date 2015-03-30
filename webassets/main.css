@@ -55,13 +55,12 @@ h5 {
 
 
 #container {
-    background-color: #FFF;
+    background-color:rgba(255,255,255,0.8);
     margin: auto auto;
     width: 800px;
     border: 1px solid #F00;
     padding: 1.5em;
     margin-top: 1.5em;
-    opacity: 0.8;
     filter: alpha(opacity=80); /* For IE8 and earlier */
     -moz-border-radius: 30px;
     -webkit-border-radius: 30px;
@@ -70,14 +69,14 @@ h5 {
 }
 
 section {
-    width: 400px;
+    width: 500px;
     float: left;
     margin: auto auto;
     border: 1px solid #0F0;
 }
 
 aside {
-    width: 300px;
+    width: 200px;
     float: right;
     margin: auto auto;
     border: 1px solid #0FF;
@@ -92,6 +91,8 @@ article,footer {
     width: 100%;
 }
 article img {
+    opacity: 1;
+    filter: alpha(opacity=100);
     display: block;
     margin-left: auto;
     margin-right: auto

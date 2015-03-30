@@ -15,8 +15,9 @@ include('includes/top.inc');
 <div id="container">
      <header>Topper </header>
           <section>
-		<h2>87.1&deg;F</h2>
-	  </section>
+		<div style="float: left"><h2>87.1&deg;F</h2>Sunrise: 8:00 AM<br/>Sunset: 8:00 PM</div>
+	<div style="float: right; text-align: center;"><img src="img/13.jpg" width="150"><br clear="all"><span>Waxing Gibbous</span></div>	  
+    	  </section>
      	  <aside>
 		<table>
 		  <tr>
@@ -36,17 +37,17 @@ include('includes/top.inc');
      <article><h3>Latest Img:</h3></article> 
      <article>
      <h3>Temperature:</h3><span style="display: block; text-align: right">
-<a href="#t" onclick="changeImage('wun/Temperature_1h.png');">1h</a>
-<a href="#t" onclick="changeImage('wun/Temperature_1d.png');">1d</a>
-<a href="#t" onclick="changeImage('wun/Temperature_30d.png');">30d</a>
-<a href="#t" onclick="changeImage('wun/Temperature_1y.png');">1y</a></span>
+<a href="#t" onclick="changeImage('wun/Temperature_1h.png?'+Math.random());">1h</a>
+<a href="#t" onclick="changeImage('wun/Temperature_1d.png?'+Math.random());">1d</a>
+<a href="#t" onclick="changeImage('wun/Temperature_30d.png?'+Math.random());">30d</a>
+<a href="#t" onclick="changeImage('wun/Temperature_1y.png?'+Math.random());">1y</a></span>
 <a name="t"><img src="wun/Temperature_1h.png" alt="Temperature Graph" id="imageReplace"/></a><br />
 
      <h3>Humidity:</h3><span style="display: block; text-align: right">
-<a href="#h" onclick="changeImage2('wun/Humidity_1h.png');">1h</a>
-<a href="#h" onclick="changeImage2('wun/Humidity_1d.png');">1d</a>
-<a href="#h" onclick="changeImage2('wun/Humidity_30d.png');">30d</a>
-<a href="#h" onclick="changeImage2('wun/Humidity_1y.png');">1y</a></span>
+<a href="#h" onclick="changeImage2('wun/Humidity_1h.png?'+Math.random());">1h</a>
+<a href="#h" onclick="changeImage2('wun/Humidity_1d.png?'+Math.random());">1d</a>
+<a href="#h" onclick="changeImage2('wun/Humidity_30d.png?'+Math.random());">30d</a>
+<a href="#h" onclick="changeImage2('wun/Humidity_1y.png?'+Math.random());">1y</a></span>
 <a name="h"><img src="wun/Humidity_1h.png" alt="Humidity Graph" id="imageReplace2"/></a><br />
 
 
