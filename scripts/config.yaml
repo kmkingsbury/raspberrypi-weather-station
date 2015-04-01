@@ -4,6 +4,7 @@ name: Example Developer
 
 #RRD DB Loc/Name
 rrddb: "/usr/local/wun/wundergrounddata.rrd"
+csvdatafile: "/usr/local/wun/weatherdata.csv"
 
 graph-location: "/var/www/html/wun/"
 
