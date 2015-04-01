@@ -11,6 +11,9 @@ graph-location: "/var/www/html/wun/"
 
 use-wun: true
 wun-url: "http://api.wunderground.com/api/<api_key>/conditions/q/zmw:<zmw>.json"
+wun-almanac-url: "http://api.wunderground.com/api/<api_key>/almanac/q/<state>/<city>.json"
+wun-astronomy-url: "http://api.wunderground.com/api/<api_key>/astronomy/q/<state>/<city>.json"
+
 wun-api-keyfile: "/etc/wunapikey.txt"
 wun-api-location-city: Austin
 wun-api-location-state: TX

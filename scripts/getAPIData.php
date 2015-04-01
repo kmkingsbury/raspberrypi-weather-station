@@ -1,6 +1,6 @@
 <?php
 #API
-$configs = yaml_parse_file ("./config.yaml");
+$configs = yaml_parse_file ("/etc/wun/config.yaml");
 //var_dump($configs);
 //print $configs{'wun-url'};
 //$configs{'wun-url'};

@@ -1,5 +1,5 @@
 <?php
-$configs = yaml_parse_file ("./config.yaml");
+$configs = yaml_parse_file ("/etc/wun/config.yaml");
 
 
 

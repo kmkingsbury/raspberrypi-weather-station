@@ -16,22 +16,24 @@ update-rc.d apache2 enable
 sudo apt-get install php5
 sudo apt-get install rrdtool
 sudo apt-get install gpsd gpsd-clients python-gps
-sudo apt-get install libdevice-serialport-perl
-sudo cpan GPS::NMEA
-sudo apt-get install libnet-gpsd3-perl
-sudo apt-get install libproc-daemon-perl
+#sudo apt-get install libdevice-serialport-perl
+#sudo cpan GPS::NMEA
+#sudo apt-get install libnet-gpsd3-perl
+#sudo apt-get install libproc-daemon-perl
 sudo apt-get install php5-dev
 sudo apt-get install php-pear
 sudo apt-get install libyaml-dev
 sudo pecl install yaml-0.6.3
-sudo apt-get install libjson-pp-perl
-sudo apt-get install libclass-csv-perl
-sudo apt-get install libyaml-tiny-perl
+#sudo apt-get install libjson-pp-perl
+#sudo apt-get install libclass-csv-perl
+#sudo apt-get install libyaml-tiny-perl
 
 sudo apt-get install python-yaml
 sudo apt-get install python-rrdtool
+sudo apt-get install php5-rrd
 
-
+#Startup:
+sudo gpsd /dev/ttyUSB0 -F /var/run/gpsd.sock
 
 extension=yaml.so
 /etc/php5/apache2/php.ini
