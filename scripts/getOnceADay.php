@@ -1,7 +1,8 @@
 <?php
+date_default_timezone_set('America/Chicago');
 
 // API
-$configs = yaml_parse_file ("./config.yaml");
+$configs = yaml_parse_file ("/etc/wun/config.yaml");
 //var_dump($configs);
 
 // Add trailing slash if missing
@@ -26,9 +27,15 @@ foreach ($files as $f){
 
 	print "URL:" . $url;
 
+	//archive-loc
+	print "File:". $configs{'archive-location'}.$f['name']."_".strtolower($configs{'wun-api-location-city'})."_".date('Y-m-d').".json";
+	$fp = fopen($configs{'archive-location'}.$f['name']."_".strtolower($configs{'wun-api-location-city'})."_".date('Y-m-d').".json", 'w');
+//	fwrite($fp, $tuData);
+
 	$tuCurl = curl_init(); 
 	curl_setopt($tuCurl, CURLOPT_URL, $url); 
-	
+	curl_setopt($tuCurl, CURLOPT_FILE, $fp);	
+
 	$tuData = curl_exec($tuCurl); 
 	if(!curl_errno($tuCurl)){ 
 	  $info = curl_getinfo($tuCurl); 
@@ -37,13 +44,9 @@ foreach ($files as $f){
 	  echo 'Curl error: ' . curl_error($tuCurl); 
 	} 
 
-	//archive-loc
-	print "File:". $configs{'archive-location'}.$f['name']."_".strtolower($configs{'wun-api-location-city'})."_".date('Y-m-d').".json";
-	$fp = fopen($configs{'archive-location'}.$f['name']."_".strtolower($configs{'wun-api-location-city'})."_".date('Y-m-d').".json", 'w');
-	fwrite($fp, $tuData);
 	fclose($fp);
 	curl_close($tuCurl); 
-
+	
 	// relink
 	unlink($f['file']);
 	symlink ( $configs{'archive-location'}.$f['name']."_".strtolower($configs{'wun-api-location-city'})."_".date('Y-m-d').".json" , $f['file'] );

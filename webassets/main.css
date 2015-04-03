@@ -4,7 +4,7 @@ html {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
     background-color: #000;
-    background: url('img/Austin.jpg') no-repeat center center fixed; 
+    background: url('img/day.png') no-repeat center center fixed; 
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
@@ -58,9 +58,10 @@ h5 {
     background-color:rgba(255,255,255,0.8);
     margin: auto auto;
     width: 800px;
-    border: 1px solid #F00;
+/*    border: 1px solid #F00;*/
     padding: 1.5em;
-    margin-top: 1.5em;
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
     filter: alpha(opacity=80); /* For IE8 and earlier */
     -moz-border-radius: 30px;
     -webkit-border-radius: 30px;
@@ -72,21 +73,21 @@ section {
     width: 500px;
     float: left;
     margin: auto auto;
-    border: 1px solid #0F0;
+/*    border: 1px solid #0F0;*/
 }
 
 aside {
     width: 200px;
     float: right;
     margin: auto auto;
-    border: 1px solid #0FF;
+/*    border: 1px solid #0FF; */
     margin-bottom: .5em;
 
 }
 
 article,footer {
     clear: both;
-    border: 1px solid #000;
+/*     border: 1px solid #000; */
     margin-top: 1em;
     width: 100%;
 }
