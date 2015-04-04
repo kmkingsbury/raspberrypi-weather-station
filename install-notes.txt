@@ -9,28 +9,43 @@ make a movie how-to here: http://ubuntuforums.org/showthread.php?t=2022316
 
 
 
-Connect to network
+Connect to network:
+apt-get update
 sudo apt-get install apache2
 update-rc.d apache2 enable
+sudo apt-get install python-dev
+sudo apt-get install python-rpi.gpio
 
-sudo apt-get install php5
+
 sudo apt-get install rrdtool
 sudo apt-get install gpsd gpsd-clients python-gps
-#sudo apt-get install libdevice-serialport-perl
-#sudo cpan GPS::NMEA
-#sudo apt-get install libnet-gpsd3-perl
-#sudo apt-get install libproc-daemon-perl
+sudo apt-get install php5
 sudo apt-get install php5-dev
 sudo apt-get install php-pear
 sudo apt-get install libyaml-dev
 sudo pecl install yaml-0.6.3
-#sudo apt-get install libjson-pp-perl
-#sudo apt-get install libclass-csv-perl
-#sudo apt-get install libyaml-tiny-perl
-
 sudo apt-get install python-yaml
 sudo apt-get install python-rrdtool
 sudo apt-get install php5-rrd
+
+Don't need these, might for other GPIO projects, used some for dev/testing
+#sudo apt-get install libjson-pp-perl
+#sudo apt-get install libclass-csv-perl
+#sudo apt-get install libyaml-tiny-perl
+#sudo apt-get install libdevice-serialport-perl
+#sudo cpan GPS::NMEA
+#sudo apt-get install libnet-gpsd3-perl
+#sudo apt-get install libproc-daemon-perl
+#sudo apt-get install python-smbus
+#apt-get install npm
+
+#Code Projects using same sensor.
+git clone https://github.com/PrzemoF/bmp183.git
+git clone git://gist.github.com/3151375.git
+git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+
+Extra: 
+sudo apt-get install vnc-server
 
 #Startup:
 sudo gpsd /dev/ttyUSB0 -F /var/run/gpsd.sock
@@ -49,15 +64,18 @@ DS:humidity:GAUGE:2:0:100 \
 DS:light:GAUGE:2:0:255 \
 DS:winddir:GAUGE:2:0:360 \
 DS:windspeed:GAUGE:2:0:100 \
-DS:pressure:GAUGE:2:50000:200000 \
+DS:pressure:GAUGE:2:0:200000 \
 DS:rain:GAUGE:2:0:10 \
 RRA:AVERAGE:0.5:1:43200 \
 RRA:MIN:0.5:1:43200 \
 RRA:MAX:0.5:1:43200 \
-RRA:AVERAGE:0.5:60:43200 \
+RRA:AVERAGE:0.5:5:43200 \
 RRA:MIN:0.5:60:43200 \
 RRA:MAX:0.5:60:43200 \
-RRA:AVERAGE:0.5:60:43800 \
+RRA:AVERAGE:0.5:5:43800 \
+RRA:MIN:0.5:60:43800 \
+RRA:MAX:0.5:60:43800 \
+RRA:AVERAGE:0.5:5:43800 \
 RRA:MIN:0.5:60:43800 \
 RRA:MAX:0.5:60:43800 
 
@@ -67,7 +85,7 @@ DS:temperature:GAUGE:600:-50:100 \
 DS:humidity:GAUGE:600:0:100 \
 DS:winddir:GAUGE:600:0:100 \
 DS:windspeed:GAUGE:600:0:100 \
-DS:pressure:GAUGE:600:50000:200000 \
+DS:pressure:GAUGE:600:0:200000 \
 DS:rain:GAUGE:600:0:10 \
 RRA:AVERAGE:0.5:1:1440 \
 RRA:MIN:0.5:1:1440 \
