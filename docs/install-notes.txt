@@ -44,6 +44,53 @@ git clone https://github.com/PrzemoF/bmp183.git
 git clone git://gist.github.com/3151375.git
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git
 
+Using/Testing 3rd party code:
+
+Pinout layout: http://data.designspark.info/uploads/images/53bc258dc6c0425cb44870b50ab30621
+
+BMP138:
+wiring pins 8,10,12,16: 
+  self.SCK = 8  # GPIO for SCK, other name SCLK
+  self.SDO = 10  # GPIO for SDO, other name MISO
+  self.SDI = 12  # GPIO for SDI, other name MOSI
+  self.CS = 16  # GPIO for CS, other name CE
+bmp works staright up with ./measure.py
+
+Copy Module:
+cp ~/bmp183/bmp183.pyc scripts/
+
+
+Adafruit-DHT:
+Wiring to pin 7 which is GPIO 4
+sudo python setup.py install
+cd examples
+python AdafruitDHT.py 11 4
+
+
+MCP3008:
+adafruit_mcp3008.py
+Chnage pins to:
+SPICLK = 17 #18
+SPIMISO = 24#23
+SPIMOSI = 25#24
+SPICS = 27#25 
+
+
+test
+
+
+
+GPS Make sure shows up on lsusb.
+Then
+sudo killall gpsd
+sudo gpsd /dev/ttyUSB0 -F /var/run/gpsd.sock
+cgps -s
+
+https://learn.adafruit.com/adafruit-ultimate-gps-on-the-raspberry-pi/using-your-gps
+script:
+python gpstest.py 
+
+
 Extra: 
 sudo apt-get install vnc-server
 
