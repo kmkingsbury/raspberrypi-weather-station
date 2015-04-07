@@ -8,7 +8,7 @@ csvdatafile: "/usr/local/wun/weatherdata.csv"
 
 graph-location: "/var/www/html/wun/"
 
-photo-location:"/var/www/html/camera/"
+photo-location: "/var/www/html/camera/"
 
 use-wun: true
 wun-url: "http://api.wunderground.com/api/<api_key>/conditions/q/zmw:<zmw>.json"

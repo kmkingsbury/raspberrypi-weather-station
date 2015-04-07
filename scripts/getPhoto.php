@@ -10,16 +10,8 @@ $configs = yaml_parse_file ("/etc/wun/config.yaml");
 
 $name = date('Y-m-d_h_i') . ".jpg";
 
-$call = "raspistill -o $configs{'photo-location'}.$name"
+$call = "raspistill -o ".$configs{'photo-location'}.$name;
+print `$call`;
 
 unlink($configs{'photo-location'}.'current.jpg');
 symlink ( $configs{'photo-location'}.$name, $configs{'photo-location'}."current.jpg" );
-
-?>
-
-
-
-
-
-
-?>
