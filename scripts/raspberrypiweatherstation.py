@@ -28,11 +28,17 @@ SPICLK = 11 #17
 SPIMISO = 18 #24
 SPIMOSI = 22 #25
 SPICS = 13 #27
-
 humidity_adc = 0
-
 mybutton = 40
+mywindspeed = 38
+myraingauge = 37
+light_adc = 1
+winddir_adc = 2
 
+
+runner = True
+rain_count = 0
+windspeed_count = 0
 # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
 def readadc(adcnum, clockpin, mosipin, misopin, cspin):
         if ((adcnum > 7) or (adcnum < 0)):
@@ -71,15 +77,22 @@ def readadc(adcnum, clockpin, mosipin, misopin, cspin):
 # handle the button event 
 def buttonEventHandler (pin):
     print "handling button event"
-
-    # turn the green LED on
-    # GPIO.output(25,True)
-
     os.system("shutdown -h now")
-    #time.sleep(1)
+    global runner 
+    runner = False
 
-    # turn the green LED off
-    #GPIO.output(25,False)
+def windEventHandler (pin):
+    print "handling wind speed event"
+    global windspeed_count
+    windspeed_count += 1
+
+def rainEventHandler (pin):
+    print "handling rain event"
+    global rain_count
+    rain_count += 1
+
+
+
 
 class GpsPoller(threading.Thread):
   def __init__(self):
@@ -133,25 +146,27 @@ if __name__ == '__main__':
 
 
   GPIO.setup(mybutton, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-  # # setup pin 23 as an input
-  # and set up pins 24 and 25 as outputs
-  # GPIO.setup(23,GPIO.IN)
-  # GPIO.setup(24,GPIO.OUT)
-  # GPIO.setup(25,GPIO.OUT)
+  GPIO.setup(mywindspeed, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+  GPIO.setup(myraingauge, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+
   
   # tell the GPIO library to look out for an 
-  # event on pin 23 and deal with it by calling 
+  # event on pin x and deal with it by calling 
   # the buttonEventHandler function
   GPIO.add_event_detect(mybutton,GPIO.FALLING)
   GPIO.add_event_callback(mybutton,buttonEventHandler)
+
+  GPIO.add_event_detect(mywindspeed,GPIO.FALLING)
+  GPIO.add_event_callback(mywindspeed,windEventHandler)
   
-  # turn off both LEDs
-  # GPIO.output(25,False)
-  # GPIO.output(24,True)
+  GPIO.add_event_detect(myraingauge,GPIO.FALLING)
+  GPIO.add_event_callback(myraingauge,rainEventHandler)
+  
  
   try:
     gpsp.start() # start it up
-    while True:
+    while (runner == True):
       #It may take a second or two to get good data
 
 
@@ -193,16 +208,29 @@ if __name__ == '__main__':
       print "Val "+ str(value) + "Perc" + str(value/1023.) + " TH:"+str(trueRH)
 
       # GEt Light:
-      light = readadc(1, SPICLK, SPIMOSI, SPIMISO, SPICS)
+      light = readadc(light_adc, SPICLK, SPIMOSI, SPIMISO, SPICS)
       print "Light:"+ str(light) 
 
+      #Rain: 
+      #Right now this is just recording "hits", so this would be x events since last call.
+      rain = rain_count
+      rain_count = 0;
+      
 
       #Wind Dir:
+      # These need to be mapped to a direction. Right now record raw, we'll convert later or in the graphs.
+      winddir = readadc(winddir_adc, SPICLK, SPIMOSI, SPIMISO, SPICS)
+      print "Wind:"+ str(winddir)
+      
 
       #Wind Speed
+      #interupt: 1 = 180deg, 2 int = 1 full rotation.
+      #Like Rain, this is just recording "hits",
+      windspeed = windspeed_count
+      windspeed_count = 0;
 
       #Record to CSV
-      data = [ timenow, gpsd.fix.latitude, gpsd.fix.longitude, bmptemp, trueRH, bmppressure, light ]
+      data = [ timenow, gpsd.fix.latitude, gpsd.fix.longitude, bmptemp, trueRH, bmppressure, light, winddir, windspeed, rain ]
       print "Data: ",
       print (data)
       csv.writerow(data)
@@ -211,9 +239,9 @@ if __name__ == '__main__':
       time.sleep(1) #set to whatever
 
   except (KeyboardInterrupt, SystemExit): #when you press ctrl+c
-    print "\nKilling Thread..."
-    
+    print "\nKilling Thread..."    
     gpsp.running = False
+    runner = False
     #gpsp.join() # wait for the thread to finish what it's doing
   print "Almost done."
   fp.close()
