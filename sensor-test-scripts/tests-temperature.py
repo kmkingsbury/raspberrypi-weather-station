@@ -6,7 +6,8 @@
 # Red resistor & 3v3
 # Yellow resistor & #4
 
-#
+# run: python3 test-temperature.py
+
 import time
 from w1thermsensor import W1ThermSensor
 sensor = W1ThermSensor()
