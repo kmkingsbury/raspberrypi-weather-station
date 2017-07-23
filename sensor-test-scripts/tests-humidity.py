@@ -5,6 +5,6 @@ GPIO.setwarnings(False)
 
 bmp = bmp183()
 bmp.measure_pressure()
-print ("Temperature: ", bmp.temperature, "deg C")
+print ("Temperature: ", (bmp.temperature*1.8)+32, "deg F")
 print ("Pressure: ", bmp.pressure / 100.0, " hPa")
 quit()
