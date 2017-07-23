@@ -7,9 +7,40 @@ Raspberry Pi 3 Model B v1.2
 * Setup Wifi.
 * Update / Upgrade / reboot
 * Install vim
+sudo apt-get install vim
+
+## Base Packages
+```
+sudo apt-get install python3 git
+```
+## Specifics
+
+### bmp183
+https://www.adafruit.com/product/1900
+
+https://github.com/PrzemoF/bmp183
+```
+sudo apt-get install python3-rpi.gpio
+sudo apt-get install python3-numpy
+```
+test-humidity.py uses the bmp183.py module to talk to the bmp183
+Choose the right pins and set in bmp183.py  lines 74 - 77:
+```               
+self.SCK = 17  # GPIO for SCK, other name SCLK
+self.SDO = 22  # GPIO for SDO, other name MISO
+self.SDI = 23  # GPIO for SDI, other name MOSI
+self.CS = 27  # GPIO for CS, other name CE
+```
+
+### Soil Temp
+* Enable 1-wire in the raspi-config menu.
+* Yellow Wire goes to GPIO 4 (pin 7)
+```
+sudo apt-get install python3-w1thermsensor
+```
 
 
-GPS:
+### GPS:
 apt-get install gpsd gpsd-clients python-gps
 
 MCP3008-I:
