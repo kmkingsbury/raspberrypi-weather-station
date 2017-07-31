@@ -38,7 +38,8 @@ self.CS = 27  # GPIO for CS, other name CE
 ```
 sudo apt-get install python3-w1thermsensor
 ```
-
+## MQ2
+https://tutorials-raspberrypi.com/configure-and-read-out-the-raspberry-pi-gas-sensor-mq-x/
 
 ### GPS:
 apt-get install gpsd gpsd-clients python-gps
