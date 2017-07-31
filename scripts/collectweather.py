@@ -25,10 +25,24 @@ if __name__ == '__main__':
   logger = structlog.get_logger()
 
 
-  logger.info("Starting up...")
-
-  # Setup : Read Config YAMl, Open CSV.
-
+  daemon = Daemon('/tmp/daemon-example.pid')
+  if len(sys.argv) == 2:
+    if 'start' == sys.argv[1]:
+      logger.info("Starting up...")
+      daemon.start()
+    elif 'stop' == sys.argv[1]:
+      logger.info("Shutting down...")
+      daemon.stop()
+    elif 'restart' == sys.argv[1]:
+      logger.info("Restarting...")
+      daemon.restart()
+    else:
+      print("Unknown command")
+      sys.exit(2)
+      sys.exit(0)
+  else:
+    print("usage: %s start|stop|restart" % sys.argv[0])
+    sys.exit(2)
   # Date Calcs
   tomorrow = datetime.date.today() + datetime.timedelta(days=1)
   logger.debug("Tomorrow: " + str(tomorrow.month) + " " + str(tomorrow.day))
