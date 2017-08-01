@@ -2,6 +2,12 @@
 # An employee record
 name: Example Developer
 
+- soiltemp:
+    use: True
+    #w1thermsensor assumes pin #4
+
+- bmp183:
+
 #RRD DB Loc/Name
 rrddb: "/var/www/html/wundergrounddata.rrd"
 csvdatafile: "/usr/local/wun/weatherdata.csv"
@@ -10,20 +16,18 @@ graph-location: "/var/www/html/wun/"
 
 photo-location: "/var/www/html/camera/"
 
-use-wun: true
-wun-url: "http://api.wunderground.com/api/<api_key>/conditions/q/zmw:<zmw>.json"
-wun-almanac-url: "http://api.wunderground.com/api/<api_key>/almanac/q/<state>/<city>.json"
-wun-astronomy-url: "http://api.wunderground.com/api/<api_key>/astronomy/q/<state>/<city>.json"
+#use-wun: true
+#wun-url: "http://api.wunderground.com/api/<api_key>/conditions/q/zmw:<zmw>.json"
+#wun-almanac-url: "http://api.wunderground.com/api/<api_key>/almanac/q/<state>/<city>.json"
+#wun-astronomy-url: "http://api.wunderground.com/api/<api_key>/astronomy/q/<state>/<city>.json"
+#
+#wun-api-keyfile: "/etc/wunapikey.txt"
+#wun-api-location-city: Austin
+#wun-api-location-state: TX
 
-wun-api-keyfile: "/etc/wunapikey.txt"
-wun-api-location-city: Austin
-wun-api-location-state: TX
+#z - zip code  #m - magic station No.  #w - wmo identifier
+#wun-api-location-zmw: 78701.1.99999
 
-#z - zip code  #m - magic station No.  #w - wmo identifier 
-wun-api-location-zmw: 78701.1.99999  
-
-archive-location: "/var/www/html/archive/"
-history-file: "almanac_current.json"
-astronomy-file: "astronomy_current.json"
-
-
+#archive-location: "/var/www/html/archive/"
+#history-file: "almanac_current.json"
+#astronomy-file: "astronomy_current.json"

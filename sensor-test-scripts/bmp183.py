@@ -67,14 +67,14 @@ class bmp183():
             'OVERSAMPLE_3_WAIT': 0.0255,
         }
 
-        def __init__(self):
+        def __init__(self,sck=11,sdo=15,sdi=16,cs=13):
                 self.temperature = 0
                 self.pressure = 0
                 # Setup Raspberry PINS, as numbered on BOARD
-                self.SCK = 11  # GPIO for SCK, other name SCLK
-                self.SDO = 15  # GPIO for SDO, other name MISO
-                self.SDI = 16  # GPIO for SDI, other name MOSI
-                self.CS = 13  # GPIO for CS, other name CE
+                self.SCK = sck  # GPIO for SCK, other name SCLK
+                self.SDO = sdo  # GPIO for SDO, other name MISO
+                self.SDI = sdi  # GPIO for SDI, other name MOSI
+                self.CS = cs  # GPIO for CS, other name CE
 
                 # SCK frequency 1 MHz
                 self.delay = 1 / 1000000.0
