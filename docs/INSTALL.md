@@ -15,6 +15,19 @@ sudo apt-get install python3 git
 ```
 ## Specifics
 
+### DHT11
+```
+git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+cd
+sudo python3 setup.py install
+```
+
+### Hih 4030
+https://antoniolopes.info/blog/2013/03/05/working-with-analog-sensors-in-the-raspberry-pi/
+http://www.picaxeforum.co.uk/showthread.php?14938-Hih-4030&p=133532&viewfull=1#post133532
+http://bildr.org/2012/11/hih4030-arduino/
+
+
 ### bmp183
 https://www.adafruit.com/product/1900
 
