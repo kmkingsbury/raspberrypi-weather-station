@@ -73,16 +73,18 @@ class WeatherDaemon(Daemon):
 
 class WeatherData:
 
-    def __init__(self, t=0, h=0 ):
+    def __init__(self, t=0, p=0 ):
         self._timestamp = datetime.datetime.utcnow()
         self._temp = t
-        self._pressure = h
+        self._pressure = p
+        self._humidityDHT = 'NaN'
+        self._temperatureDHT = 'NaN'
         self._light = 0
         self._winddir = 0
         self._windspeed = 0
         self._rain = 0
         self._dataformatversion = 0.1
-
+        self._DHTsuccess = 0
 
     @property
     def pressureMillibar(self):
@@ -102,6 +104,25 @@ class WeatherData:
       return self._dataformatversion
 
     @property
+    def humidityDHT(self):
+      """getting"""
+      return self._humidityDHT
+
+    @property
+    def temperatureDHT(self):
+      """getting"""
+      return self._temperatureDHT
+
+    @humidityDHT.setter
+    def humidityDHT(self, value):
+      self._humidityDHT = value
+
+    @temperatureDHT.setter
+    def temperatureDHT(self, value):
+      self._temperatureDHT = value
+
+
+    @property
     def tempF(self):
       """getting"""
       return "%0.1f" % ((self._temp*1.8)+32,)
@@ -113,14 +134,14 @@ class WeatherData:
 
 
     def exportdata(self):
-      return [ str(self._timestamp), self.tempF, self.pressureMillibar, self._light, self._winddir, self._windspeed, self._rain ]
+      return [ str(self._timestamp), self.tempF, self.pressureMillibar, self.temperatureDHT, self.humidityDHT, self._light, self._winddir, self._windspeed, self._rain ]
 
 
 
     def describedata(self, v=None):
         v = v or self._dataformatversion
         if v == 0.1:
-            return [ "Timestamp UTC",  "BMP Temp F", "BMP Pressure Millibar", "Light Count", "Winddir ", "Windspeed Count", "Rain Count"  ]
+            return [ "Timestamp UTC",  "BMP Temp F", "BMP Pressure Millibar", "DHT Temp C", "DHT Humidity %",  "Light Count", "Winddir ", "Windspeed Count", "Rain Count"  ]
         else:
             return [v]
 
@@ -148,34 +169,37 @@ if __name__ == '__main__':
                cfg.configs['bmp183']['pin-sdi'],
                cfg.configs['bmp183']['pin-cs'])
 
+  datalast = None
+  while (1 == 1):
 
+      #print(sorted(list(data._dumprow)))
+      bmp.measure_pressure()
+      data = WeatherData(bmp.temperature, bmp.pressure )
+      print("Temperature: " + data.tempF + " deg F")
+      print("Temperature: " + data.tempC + " deg C")
+      print("Pressure : " + data.pressureMillibar + " millibar")
+      print("Pressure : " + data.pressureInchesHG + " inches-Hg")
 
-  #print(sorted(list(data._dumprow)))
-  bmp.measure_pressure()
-  data = WeatherData(bmp.temperature, bmp.pressure )
-  print("Temperature: " + data.tempF + " deg F")
-  print("Temperature: " + data.tempC + " deg C")
-  print("Pressure : " + data.pressureMillibar + " millibar")
-  print("Pressure : " + data.pressureInchesHG + " inches-Hg")
+      # Every 2 seconds:
+      humidity, temperature = Adafruit_DHT.read(11, 6)
+      if humidity is not None and temperature is not None:
+        print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity))
+      else:
+        if datalast is not None:
+              humidity = datalast.humidityDHT
+              temperature = datalast.temperatureDHT
+        print('Failed to get reading. Try again!')
+      data.temperatureDHT = temperature
+      data.humidityDHT = humidity
 
-  # Every 2 seconds:
-  humidity, temperature = Adafruit_DHT.read(11, 6)
-  if humidity is not None and temperature is not None:
-    print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity))
-  else:
-    print('Failed to get reading. Try again!')
+      #Output:
+      print("Data:")
+      print (list(data.exportdata()))
+      dataout.writedata(data.exportdata())
 
-
-  #Output:
-  print("Data:")
-  print (list(data.exportdata()))
-  dataout.writedata(data.exportdata())
-  print (list(data.exportdata()))
-  dataout.writedata(data.exportdata())
-
-  print ("Desc: ")
-  print(data.describedata())
-
+      #print ("Desc: ")
+      #print(data.describedata())
+      datalast = data
   exit(0);
 
 
