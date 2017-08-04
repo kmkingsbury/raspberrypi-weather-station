@@ -92,6 +92,7 @@ class bmp183():
         def __del__(self):
                 self.cleanup_gpio()
 
+
         def set_up_gpio(self):
                 # GPIO initialisation
                 GPIO.setmode(GPIO.BOARD)
@@ -102,10 +103,13 @@ class bmp183():
 
         def cleanup_gpio(self):
                 # GPIO clean up
+            try:
                 GPIO.cleanup(self.SCK)
                 GPIO.cleanup(self.CS)
                 GPIO.cleanup(self.SDI)
                 GPIO.cleanup(self.SDO)
+            except:
+                pass
 
         def read_byte(self, addr):
                 # Read byte from SPI interface from address "addr"

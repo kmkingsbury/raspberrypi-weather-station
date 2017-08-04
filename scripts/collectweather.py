@@ -7,6 +7,7 @@ import logging.config
 import csv
 import yaml
 import structlog
+from pathlib import Path
 
 try:
     import thread
@@ -21,6 +22,36 @@ import loggerhelper
 from daemon import Daemon
 from bmp183 import bmp183
 import Adafruit_DHT
+
+class CSVWriter:
+
+  def __init__(self, filename='test.csv', header=[]):
+    newfile = False
+    self._header = header
+    outfile = Path(filename)
+    if not outfile.is_file():
+        #File doesn't exist, will be created, print header too
+        newfile = True
+    self.fn = open(filename, 'a')
+    self._day= datetime.date.today().day
+    print("Date:" + str(self._day))
+    self.csv = csv.writer(self.fn, delimiter=',')
+    print("Size"+ str(len(header)))
+    if (newfile == True):
+      #new file so print header
+      self.csv.writerow(self._header)
+
+  def writedata(self,dataobj):
+    if (self._day != datetime.date.today().day):
+      dt = datetime.date.today()
+      filename = "data-"+dt.strftime("%Y-%m-%d") + ".csv"
+      self.fn.close()
+      self = CSVWriter(filename, self._header)
+      self.csv.writerow(self._header)
+    self.csv.writerow(dataobj)
+
+  def __del__(self):
+    self.fn.close()
 
 
 class StationConfig:
@@ -42,11 +73,16 @@ class WeatherDaemon(Daemon):
 
 class WeatherData:
 
-    def __init__(self, t, h ):
+    def __init__(self, t=0, h=0 ):
+        self._timestamp = datetime.datetime.utcnow()
         self._temp = t
         self._pressure = h
+        self._light = 0
+        self._winddir = 0
+        self._windspeed = 0
+        self._rain = 0
         self._dataformatversion = 0.1
-        self._fields = ['tempf', 'pressure', 'dataformatversion']
+
 
     @property
     def pressureMillibar(self):
@@ -75,10 +111,19 @@ class WeatherData:
       """getting"""
       return "%0.1f" % (self._temp,)
 
-    #@temp.setter
-    #def temp(self, value):
-    #  """setting"""
-    #  self._temp = value
+
+    def exportdata(self):
+      return [ str(self._timestamp), self.tempF, self.pressureMillibar, self._light, self._winddir, self._windspeed, self._rain ]
+
+
+
+    def describedata(self, v=None):
+        v = v or self._dataformatversion
+        if v == 0.1:
+            return [ "Timestamp UTC",  "BMP Temp F", "BMP Pressure Millibar", "Light Count", "Winddir ", "Windspeed Count", "Rain Count"  ]
+        else:
+            return [v]
+
 
 
 if __name__ == '__main__':
@@ -90,21 +135,21 @@ if __name__ == '__main__':
   logger.info("Loading Configs...")
   cfg = StationConfig('config.yaml')
   #cfg.dumpcfg()
-  logger.debug("Sensor Info:")
-  #print(cfg.configs['bmp183']['pin-sck'])
+
+  logger.info("Getting Data Ready:")
+  # Get our CSV Writer ready, pass in the Data Header for 1st line
+  dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") + ".csv", WeatherData().describedata())
 
   #Sensors
+  logger.info("Getting Sensors Ready:")
+  #print(cfg.configs['bmp183']['pin-sck'])
   bmp = bmp183(cfg.configs['bmp183']['pin-sck'],
                cfg.configs['bmp183']['pin-sdo'],
                cfg.configs['bmp183']['pin-sdi'],
                cfg.configs['bmp183']['pin-cs'])
 
-  #data = WeatherData(100,50)
-  #print(data.temp)
-  #data.temp = 35
-  #print(data.temp)
-  #print(data.humidity)
-  print("Data:")
+
+
   #print(sorted(list(data._dumprow)))
   bmp.measure_pressure()
   data = WeatherData(bmp.temperature, bmp.pressure )
@@ -119,6 +164,17 @@ if __name__ == '__main__':
     print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(temperature, humidity))
   else:
     print('Failed to get reading. Try again!')
+
+
+  #Output:
+  print("Data:")
+  print (list(data.exportdata()))
+  dataout.writedata(data.exportdata())
+  print (list(data.exportdata()))
+  dataout.writedata(data.exportdata())
+
+  print ("Desc: ")
+  print(data.describedata())
 
   exit(0);
 
