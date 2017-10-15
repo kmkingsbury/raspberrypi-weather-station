@@ -22,6 +22,8 @@ import loggerhelper
 from daemon import Daemon
 from bmp183 import bmp183
 import Adafruit_DHT
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_MCP3008
 
 class CSVWriter:
 
@@ -33,7 +35,7 @@ class CSVWriter:
         #File doesn't exist, will be created, print header too
         newfile = True
     self.fn = open(filename, 'a')
-    self._day= datetime.date.today().day
+    self._day= int(datetime.date.today().day)
     print("Date:" + str(self._day))
     self.csv = csv.writer(self.fn, delimiter=',')
     print("Size"+ str(len(header)))
@@ -41,13 +43,14 @@ class CSVWriter:
       #new file so print header
       self.csv.writerow(self._header)
 
-  def writedata(self,dataobj):
-    if (self._day != datetime.date.today().day):
+  def writedata(self,dataobj, day):
+    if (self._day != day):
       dt = datetime.date.today()
       filename = "data-"+dt.strftime("%Y-%m-%d") + ".csv"
       self.fn.close()
       self = CSVWriter(filename, self._header)
       self.csv.writerow(self._header)
+      self._day= int(datetime.date.today().day)
     self.csv.writerow(dataobj)
 
   def __del__(self):
@@ -86,6 +89,13 @@ class WeatherData:
         self._dataformatversion = 0.1
         self._DHTsuccess = 0
 
+
+    @property
+    def timeUTC(self):
+      s = self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
+      return s[:-3]
+
+
     @property
     def pressureMillibar(self):
       # Raw is Pascals, divide by 100 to get millibar
@@ -115,11 +125,17 @@ class WeatherData:
 
     @humidityDHT.setter
     def humidityDHT(self, value):
-      self._humidityDHT = value
+      if value is not None and 0.0 <= value <= 100.0:
+        self._humidityDHT = value
+      else:
+        self._humidityDHT = 0.0
 
     @temperatureDHT.setter
     def temperatureDHT(self, value):
-      self._temperatureDHT = value
+      if value is not None and 0.0 <= value <= 200.0:
+          self._temperatureDHT = value
+      else:
+          self._temperatureDHT = 0.0
 
 
     @property
@@ -134,9 +150,11 @@ class WeatherData:
 
 
     def exportdata(self):
-      return [ str(self._timestamp), self.tempF, self.pressureMillibar, self.temperatureDHT, self.humidityDHT, self._light, self._winddir, self._windspeed, self._rain ]
+      return [ str(self.timeUTC), self.tempF, self.pressureMillibar, self.temperatureDHT, self.humidityDHT, self._light, self._winddir, self._windspeed, self._rain ]
 
-
+    def day(self):
+        s = self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
+        return int(s[8:10])
 
     def describedata(self, v=None):
         v = v or self._dataformatversion
@@ -169,6 +187,12 @@ if __name__ == '__main__':
                cfg.configs['bmp183']['pin-sdi'],
                cfg.configs['bmp183']['pin-cs'])
 
+  SPI_PORT   = 0
+  SPI_DEVICE = 0
+  mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+
+
+
   datalast = None
   while (1 == 1):
 
@@ -192,11 +216,21 @@ if __name__ == '__main__':
       data.temperatureDHT = temperature
       data.humidityDHT = humidity
 
+      # Analog Readings
+      values = [0]*8
+      for i in range(8):
+        # The read_adc function will get the value of the specified channel (0-7).
+        values[i] = mcp.read_adc(i)
+      # Print the ADC values.
+      print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*range(8)))
+      print('-' * 57)
+      print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*values))
+
       #Output:
       print("Data:")
       print (list(data.exportdata()))
-      dataout.writedata(data.exportdata())
-
+      dataout.writedata(data.exportdata(), data.day())
+      print("Day: " + str(data.day()))
       #print ("Desc: ")
       #print(data.describedata())
       datalast = data
