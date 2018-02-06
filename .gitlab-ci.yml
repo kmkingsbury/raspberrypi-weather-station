@@ -1,5 +1,8 @@
 image: docker:latest
 
+stages:
+  - linting
+  - build
 # When using dind, it's wise to use the overlayfs driver for
 # improved performance.
 variables:
@@ -8,10 +11,11 @@ variables:
 services:
   - docker:dind
 
-before_script:
-  - docker info
+#before_script:
+#  - docker info
 
 linting:
+  stage: linting
   image: python:latest
   script:
     - pip3 install flake8
