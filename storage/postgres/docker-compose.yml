@@ -6,6 +6,6 @@ services:
     environment:
       POSTGRES_PASSWORD: qwertyuiop
     ports:
-      - "8080:8080"
+      - "5432:5432"
     container_name: weatherstation-postgres
     restart: always
