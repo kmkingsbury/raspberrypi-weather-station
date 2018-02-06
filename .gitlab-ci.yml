@@ -1,8 +1,7 @@
-image: python:3.6-alpine
+image: python:latest
 
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq python3
   - pip3 install flake8
 
 linting:
