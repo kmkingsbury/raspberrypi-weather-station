@@ -1,0 +1,11 @@
+version: "2"
+
+services:
+   postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: qwertyuiop
+    ports:
+      - "8080:8080"
+    container_name: weatherstation-postgres
+    restart: always

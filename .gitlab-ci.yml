@@ -1,9 +1,13 @@
 image: python:latest
 
-
 before_script:
   - pip3 install flake8
 
 linting:
   script:
     - flake8 .
+
+database-building:
+  script:
+    - cd storage/postgres
+    - docker-compose build
