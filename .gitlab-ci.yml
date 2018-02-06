@@ -1,17 +1,26 @@
-image: python:latest
+image: docker:latest
+
+# When using dind, it's wise to use the overlayfs driver for
+# improved performance.
+variables:
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:dind
+
+before_script:
+  - docker info
+
+build:
+  stage: build
+  script:
+    - cd storage/postgres
+    - docker build -t my-docker-image .
+    - docker run my-docker-image /script/to/run/tests
 
 
 linting:
+  image: python:latest
   script:
     - pip3 install flake8
     - flake8 .
-
-database-building:
-  script:
-    - curl -sSL https://get.docker.com/ | sh
-    #- curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-    #- chmod 755 /usr/local/bin/docker-compose
-    - cd storage/postgres
-    - docker build -t weatherstation_psql .
-    #- /usr/local/bin/docker-compose build
-    - docker run --name weatherstation_psql_running -p 5432:5432 weatherstation_psql
