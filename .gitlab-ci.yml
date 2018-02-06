@@ -8,6 +8,7 @@ linting:
 
 database-building:
   script:
+    - curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
     - cd storage/postgres
     - pwd
-    - /usr/local/docker-compose build
+    - /usr/local/bin/docker-compose build
