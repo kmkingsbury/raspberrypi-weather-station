@@ -6,9 +6,14 @@ Running the Docker Postgresql Image:
 
 Get a simple psql shell:
 
-```docker run -it --rm --link weatherstation-postgres:postgres postgres psql -h postgres -U postgres```
+```docker run -it --rm --link weatherstation_psql:postgres postgres psql -h postgres -U postgres```
 
 Use the pgadmin tool to connect to the DB:
 
 ```docker run -d -p 5050:5050 chorss/docker-pgadmin4```
 http://localhost:5050/browser/
+
+Running the Docker Postgresql Image but with our data / format in it:
+
+```docker build -t weatherstation_psql .
+docker run -d --name weatherstation_psql_running -p 5432:5432 weatherstation_psql```
