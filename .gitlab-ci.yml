@@ -17,9 +17,9 @@ linting:
     - pip3 install flake8
     - flake8 .
 
-build:
-  stage: build
-  script:
-    - cd storage/postgres
-    - docker build -t weatherstation_psql .
-    - docker run --name weatherstation_psql_running -p 5432:5432 weatherstation_psql
+#build:
+#  stage: build
+#  script:
+#    - cd storage/postgres
+#    - docker build -t weatherstation_psql .
+#    - docker run --name weatherstation_psql_running -p 5432:5432 weatherstation_psql tests.sh
