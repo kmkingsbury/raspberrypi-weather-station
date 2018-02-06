@@ -10,4 +10,4 @@ database-building:
   script:
     - cd storage/postgres
     - pwd
-    - docker-compose build
+    - /usr/local/docker-compose build
