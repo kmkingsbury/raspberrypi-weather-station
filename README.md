@@ -37,6 +37,12 @@ Key| Type | Description | Default
 }
 ```
 
+
+# Components
+- Leverages gitlab and pipelines to do tasks
+- Database is Postgresql and the pgadmin interface to get GUI representation.
+
+
 # License and Authors
 
 Author:: Kevin Kingsbury ([@kmkingsbury](https://twitter.com/kmkingsbury))
