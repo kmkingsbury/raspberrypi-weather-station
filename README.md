@@ -40,7 +40,9 @@ Key| Type | Description | Default
 
 # Components
 - Leverages gitlab and pipelines to do tasks
-- Database is Postgresql and the pgadmin interface to get GUI representation.
+- Started with Database is Postgresql and the pgadmin interface to get GUI
+representation.
+- Moved to TSDB (Time Series Database) for better trending, anomaly detection, etc.
 
 
 # License and Authors
