@@ -37,6 +37,8 @@ Key| Type | Description | Default
 }
 ```
 
+# Python Packages
+- pip3 install pyyaml 
 
 # Components
 - Leverages gitlab and pipelines to do tasks

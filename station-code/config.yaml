@@ -1,0 +1,13 @@
+---
+# Station ID
+name: Weather Station
+soiltemp:
+  use: True
+  #w1thermsensor assumes pin #4
+
+bmp183:
+  use: True
+  pin-sck: 11
+  pin-sdo: 15
+  pin-sdi: 16
+  pin-cs: 13
