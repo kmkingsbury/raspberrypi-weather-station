@@ -28,4 +28,3 @@ unittesting:
     - pip3 install pyyaml
     - cd station-code
     - python3 test_collectweather.py -v
-    
