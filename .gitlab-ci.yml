@@ -22,7 +22,8 @@ linting:
     - flake8 .
 
 unittesting:
-  tags: pi
+  tags:
+    - pi
   stage: unittesting
   image: python:latest
   script:
