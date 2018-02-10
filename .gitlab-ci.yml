@@ -22,7 +22,7 @@ linting:
     - flake8 .
 
 unittesting:
-  stage: test
+  stage: unittesting
   image: python:latest
   script:
     - pip3 install pyyaml
