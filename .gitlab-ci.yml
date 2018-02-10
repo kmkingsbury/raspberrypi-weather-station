@@ -22,9 +22,11 @@ linting:
     - flake8 .
 
 unittesting:
+  tags: pi
   stage: unittesting
   image: python:latest
   script:
     - pip3 install pyyaml
+    - pip3 install RPi.GPIO
     - cd station-code
     - python3 test_collectweather.py -v

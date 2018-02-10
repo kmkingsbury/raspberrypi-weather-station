@@ -38,7 +38,15 @@ Key| Type | Description | Default
 ```
 
 # Python Packages
-- pip3 install pyyaml 
+- pip3 install pyyaml
+
+# 3rd Party Sensor Modules:
+```
+git clone https://github.com/PrzemoF/bmp183.git
+git clone git://gist.github.com/3151375.git
+git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+```
+
 
 # Components
 - Leverages gitlab and pipelines to do tasks
