@@ -30,5 +30,6 @@ unittesting:
     - pip3 install pyyaml
     - pip3 install RPi.GPIO
     - pip3 install structlog
+    - pip3 install numpy
     - cd station-code
     - python3 test_collectweather.py -v
