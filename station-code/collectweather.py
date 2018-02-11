@@ -14,7 +14,7 @@ import csv
 #     import _thread as thread
 
 # Our Log Stuff
-import loggerhelper
+# import loggerhelper
 
 # Modules
 from daemon import Daemon
