@@ -29,5 +29,6 @@ unittesting:
   script:
     - pip3 install pyyaml
     - pip3 install RPi.GPIO
+    - pip3 install structlog
     - cd station-code
     - python3 test_collectweather.py -v
