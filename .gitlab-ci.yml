@@ -27,16 +27,16 @@ unittesting:
   stage: unittesting
   image: python:latest
   script:
-    - cd docker
-    - docker build -t gitlab.sigint.cxm:4567/lab-projects/raspberry-pi-weatherstation .
-    - docker push gitlab.sigint.cxm:4567/lab-projects/raspberry-pi-weatherstation
-    #- pip3 install pyyaml
-    #- pip3 install RPi.GPIO
-    #- pip3 install structlog
-    #- pip3 install numpy
-    #- apt-get install git
-    #- git clone https://github.com/PrzemoF/bmp183.git
-    #- git clone git://gist.github.com/3151375.git
-    #- git clone https://github.com/adafruit/Adafruit_Python_DHT.git
-    #- cd station-code
-    #- python3 test_collectweather.py -v
+    #- cd docker
+    #- docker build -t gitlab.sigint.cxm:4567/lab-projects/raspberry-pi-weatherstation .
+    #- docker push gitlab.sigint.cxm:4567/lab-projects/raspberry-pi-weatherstation
+    - pip3 install pyyaml
+    - pip3 install RPi.GPIO
+    - pip3 install structlog
+    - pip3 install numpy
+    - apt-get install git
+    - git clone https://github.com/PrzemoF/bmp183.git
+    - git clone git://gist.github.com/3151375.git
+    - git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+    - cd station-code
+    - python3 test_collectweather.py -v
