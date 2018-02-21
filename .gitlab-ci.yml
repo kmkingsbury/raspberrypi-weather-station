@@ -11,8 +11,8 @@ variables:
 services:
   - docker:dind
 
-#before_script:
-#  - docker info
+before_script:
+  - git config --global http.sslVerify false
 
 linting:
   stage: linting
