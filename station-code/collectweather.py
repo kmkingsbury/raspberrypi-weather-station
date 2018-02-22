@@ -84,6 +84,8 @@ class WeatherData:
         self._winddir = 0
         self._windspeed = 0
         self._rain = 0
+        self._air1 = 0
+        self._air2 = 0
         self._dataformatversion = 0.1
         self._DHTsuccess = 0
 
@@ -185,9 +187,10 @@ if __name__ == '__main__':
                  cfg.configs['bmp183']['pin-sdi'],
                  cfg.configs['bmp183']['pin-cs'])
 
-    SPI_PORT = 0
-    SPI_DEVICE = 0
-    mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+    mcp = Adafruit_MCP3008.MCP3008(clk=cfg.configs['mcp3008']['pin-clk'],
+                                   cs=cfg.configs['mcp3008']['pin-cs'],
+                                   miso=cfg.configs['mcp3008']['pin-miso'],
+                                   mosi=cfg.configs['mcp3008']['pin-mosi'])
 
     datalast = None
     while True:
