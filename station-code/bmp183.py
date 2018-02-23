@@ -77,7 +77,7 @@ class bmp183():
         'OVERSAMPLE_3_WAIT': 0.0255,
     }
 
-    def __init__(self, sck=11, sdo=15, sdi=16, cs=13):
+    def __init__(self, sck=6, sdo=12, sdi=16, cs=13):
             self.temperature = 0
             self.pressure = 0
             # Setup Raspberry PINS, as numbered on BOARD
@@ -105,7 +105,7 @@ class bmp183():
 
     def set_up_gpio(self):
             # GPIO initialisation
-            GPIO.setmode(GPIO.BOARD)
+            GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.SCK, GPIO.OUT, initial=GPIO.HIGH)
             GPIO.setup(self.CS, GPIO.OUT, initial=GPIO.HIGH)
             GPIO.setup(self.SDI, GPIO.OUT)

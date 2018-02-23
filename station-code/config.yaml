@@ -31,8 +31,8 @@ lightresistor:
 
 bmp183:
   use: True
-  pin-sck: 11
-  pin-sdo: 15
+  pin-sck: 6
+  pin-sdo: 12
   pin-sdi: 16
   pin-cs: 13
 

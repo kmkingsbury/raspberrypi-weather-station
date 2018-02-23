@@ -38,15 +38,23 @@ Key| Type | Description | Default
 ```
 
 # Python Packages
+- sudo apt-get install libyaml-dev
 - pip3 install pyyaml
+- pip3 install structlog
+- pip3 install numpy
+- sudo apt-get install build-essential python-dev python3-dev
 
 # 3rd Party Sensor Modules:
 ```
 git clone https://github.com/PrzemoF/bmp183.git
 git clone git://gist.github.com/3151375.git
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+git clone https://github.com/adafruit/Adafruit_Python_GPIO.git
+git clone https://github.com/adafruit/Adafruit_Python_MCP3008.git
 ```
 
+Docker testing image:
+docker build -t gitlab.sigint.cxm:4567/lab-projects/raspberry-pi-weatherstation .
 
 # Components
 - Leverages gitlab and pipelines to do tasks
