@@ -6,7 +6,15 @@ import datetime
 import structlog
 from pathlib import Path
 import csv
-
+import os
+import glob
+ 
+os.system('modprobe w1-gpio')
+os.system('modprobe w1-therm')
+ 
+base_dir = '/sys/bus/w1/devices/'
+device_folder = glob.glob(base_dir + '28*')[0]
+device_file = device_folder + '/w1_slave'
 
 # try:
 #    import thread
@@ -69,7 +77,7 @@ class StationConfig:
 class WeatherDaemon(Daemon):
     def run(self):
         while True:
-            time.sleep(1)
+            time.sleep(.5)
 
 
 class WeatherData:
@@ -164,37 +172,62 @@ class WeatherData:
         else:
             return [v]
 
+    def DS18B20_read_temp_raw():
+        f = open(device_file, 'r')
+        lines = f.readlines()
+        f.close()
+        return lines
+ 
+    def DS18B20_read_temp():
+        lines = DS18B20_read_temp_raw()
+        while lines[0].strip()[-3:] != 'YES':
+            time.sleep(0.2)
+            lines = DS18B20_read_temp_raw()
+	    equals_pos = lines[1].find('t=')
+	if equals_pos != -1:
+    	    temp_string = lines[1][equals_pos+2:]
+    	    temp_c = float(temp_string) / 1000.0
+    	    temp_f = temp_c * 9.0 / 5.0 + 32.0
+    	    return temp_c, temp_f
+
 
 if __name__ == '__main__':
 
-    logger = structlog.get_logger()
-    GPIO.setwarnings(False)
+logger = structlog.get_logger()
+GPIO.setwarnings(False)
 
-    logger.info("Loading Configs...")
-    cfg = StationConfig('config.yaml')
-    # cfg.dumpcfg()
+logger.info("Loading Configs...")
+cfg = StationConfig('config.yaml')
+# cfg.dumpcfg()
 
-    logger.info("Getting Data Ready:")
-    # Get our CSV Writer ready, pass in the Data Header for 1st line
-    dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
-                        ".csv", WeatherData().describedata())
+logger.info("Getting Data Ready:")
+# Get our CSV Writer ready, pass in the Data Header for 1st line
+dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
+		".csv", WeatherData().describedata())
 
-    # Sensors
-    logger.info("Getting Sensors Ready:")
-    # print(cfg.configs['bmp183']['pin-sck'])
-    bmp = bmp183(cfg.configs['bmp183']['pin-sck'],
-                 cfg.configs['bmp183']['pin-sdo'],
-                 cfg.configs['bmp183']['pin-sdi'],
-                 cfg.configs['bmp183']['pin-cs'])
+# Sensors
+logger.info("Getting Sensors Ready:")
+# print(cfg.configs['bmp183']['pin-sck'])
+bmp = bmp183(cfg.configs['bmp183']['pin-sck'],
+	 cfg.configs['bmp183']['pin-sdo'],
+	 cfg.configs['bmp183']['pin-sdi'],
+	 cfg.configs['bmp183']['pin-cs'])
 
-    mcp = Adafruit_MCP3008.MCP3008(clk=cfg.configs['mcp3008']['pin-clk'],
-                                   cs=cfg.configs['mcp3008']['pin-cs'],
-                                   miso=cfg.configs['mcp3008']['pin-miso'],
-                                   mosi=cfg.configs['mcp3008']['pin-mosi'])
+#mcp = Adafruit_MCP3008.MCP3008(clk=cfg.configs['mcp3008']['pin-clk'],
+#                               cs=cfg.configs['mcp3008']['pin-cs'],
+#                               miso=cfg.configs['mcp3008']['pin-miso'],
+#                               mosi=cfg.configs['mcp3008']['pin-mosi'])
+# Hardware SPI configuration:
+SPI_PORT   = 0
+SPI_DEVICE = 0
+mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
-    datalast = None
-    while True:
 
+
+datalast = None
+while True:
+
+        print("1-wire temp:" + DS18B20_read_temp()) 
         # print(sorted(list(data._dumprow)))
         bmp.measure_pressure()
         data = WeatherData(bmp.temperature, bmp.pressure)
@@ -203,7 +236,6 @@ if __name__ == '__main__':
         print("Pressure : " + data.pressureMillibar + " millibar")
         print("Pressure : " + data.pressureInchesHG + " inches-Hg")
 
-        # Every 2 seconds:
         humidity, temperature = Adafruit_DHT.read(11, 6)
         if humidity is not None and temperature is not None:
             print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(
@@ -223,11 +255,9 @@ if __name__ == '__main__':
             # of the specified channel (0-7).
             values[i] = mcp.read_adc(i)
         # Print the ADC values.
-        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} \
-            | {6:>4} | {7:>4} |'.format(*range(8)))
+        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*range(8)))
         print('-' * 57)
-        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} \
-            | {6:>4} | {7:>4} |'.format(*values))
+        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*values))
 
         # Output:
         print("Data:")
@@ -237,6 +267,7 @@ if __name__ == '__main__':
         # print ("Desc: ")
         # print(data.describedata())
         datalast = data
+        time.sleep(0.25)
     exit(0)
 
     daemon = WeatherDaemon('/tmp/weatherdaemon.pid')
