@@ -8,10 +8,15 @@ from pathlib import Path
 import csv
 import os
 import glob
- 
+from daemon import Daemon
+from bmp183 import bmp183
+import Adafruit_DHT
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_MCP3008
+
 os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')
- 
+
 base_dir = '/sys/bus/w1/devices/'
 device_folder = glob.glob(base_dir + '28*')[0]
 device_file = device_folder + '/w1_slave'
@@ -20,16 +25,6 @@ device_file = device_folder + '/w1_slave'
 #    import thread
 # except ImportError:
 #     import _thread as thread
-
-# Our Log Stuff
-# import loggerhelper
-
-# Modules
-from daemon import Daemon
-from bmp183 import bmp183
-import Adafruit_DHT
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_MCP3008
 
 
 class CSVWriter:
@@ -172,62 +167,59 @@ class WeatherData:
         else:
             return [v]
 
-    def DS18B20_read_temp_raw():
+    def ds18b20_read_temp_raw():
         f = open(device_file, 'r')
         lines = f.readlines()
         f.close()
         return lines
- 
-    def DS18B20_read_temp():
-        lines = DS18B20_read_temp_raw()
+
+    def ds18b20_read_temp(self):
+        lines = self.ds18b20_read_temp_raw()
         while lines[0].strip()[-3:] != 'YES':
             time.sleep(0.2)
-            lines = DS18B20_read_temp_raw()
-	    equals_pos = lines[1].find('t=')
-	if equals_pos != -1:
-    	    temp_string = lines[1][equals_pos+2:]
-    	    temp_c = float(temp_string) / 1000.0
-    	    temp_f = temp_c * 9.0 / 5.0 + 32.0
-    	    return temp_c, temp_f
+            lines = self.ds18b20_read_temp_raw()
+        equals_pos = lines[1].find('t=')
+        if equals_pos != -1:
+            temp_string = lines[1][equals_pos+2:]
+            temp_c = float(temp_string) / 1000.0
+            temp_f = temp_c * 9.0 / 5.0 + 32.0
+            return temp_c, temp_f
 
 
 if __name__ == '__main__':
 
-logger = structlog.get_logger()
-GPIO.setwarnings(False)
+    logger = structlog.get_logger()
+    GPIO.setwarnings(False)
 
-logger.info("Loading Configs...")
-cfg = StationConfig('config.yaml')
-# cfg.dumpcfg()
+    logger.info("Loading Configs...")
+    cfg = StationConfig('config.yaml')
+    # cfg.dumpcfg()
 
-logger.info("Getting Data Ready:")
-# Get our CSV Writer ready, pass in the Data Header for 1st line
-dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
-		".csv", WeatherData().describedata())
+    logger.info("Getting Data Ready:")
+    # Get our CSV Writer ready, pass in the Data Header for 1st line
+    dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
+                        ".csv", WeatherData().describedata())
 
-# Sensors
-logger.info("Getting Sensors Ready:")
-# print(cfg.configs['bmp183']['pin-sck'])
-bmp = bmp183(cfg.configs['bmp183']['pin-sck'],
-	 cfg.configs['bmp183']['pin-sdo'],
-	 cfg.configs['bmp183']['pin-sdi'],
-	 cfg.configs['bmp183']['pin-cs'])
+    # Sensors
+    logger.info("Getting Sensors Ready:")
+    # print(cfg.configs['bmp183']['pin-sck'])
+    bmp = bmp183(cfg.configs['bmp183']['pin-sck'],
+                 cfg.configs['bmp183']['pin-sdo'],
+                 cfg.configs['bmp183']['pin-sdi'],
+                 cfg.configs['bmp183']['pin-cs'])
 
-#mcp = Adafruit_MCP3008.MCP3008(clk=cfg.configs['mcp3008']['pin-clk'],
-#                               cs=cfg.configs['mcp3008']['pin-cs'],
-#                               miso=cfg.configs['mcp3008']['pin-miso'],
-#                               mosi=cfg.configs['mcp3008']['pin-mosi'])
-# Hardware SPI configuration:
-SPI_PORT   = 0
-SPI_DEVICE = 0
-mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+    # mcp = Adafruit_MCP3008.MCP3008(clk=cfg.configs['mcp3008']['pin-clk'],
+    #                               cs=cfg.configs['mcp3008']['pin-cs'],
+    #                               miso=cfg.configs['mcp3008']['pin-miso'],
+    #                               mosi=cfg.configs['mcp3008']['pin-mosi'])
+    # Hardware SPI configuration:
+    SPI_PORT = 0
+    SPI_DEVICE = 0
+    mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
+    datalast = None
+    while True:
 
-
-datalast = None
-while True:
-
-        print("1-wire temp:" + DS18B20_read_temp()) 
         # print(sorted(list(data._dumprow)))
         bmp.measure_pressure()
         data = WeatherData(bmp.temperature, bmp.pressure)
@@ -235,6 +227,8 @@ while True:
         print("Temperature: " + data.tempC + " deg C")
         print("Pressure : " + data.pressureMillibar + " millibar")
         print("Pressure : " + data.pressureInchesHG + " inches-Hg")
+
+        print("1-wire temp:" + data.ds18b20_read_temp())
 
         humidity, temperature = Adafruit_DHT.read(11, 6)
         if humidity is not None and temperature is not None:
