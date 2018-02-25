@@ -397,14 +397,15 @@ if __name__ == '__main__':
               bmp_pressuer_millibar, dht_temp_c, dht_humidity_perc,
               light_reading, wind_dir_value, wind_speed_count, rain_count,
               soil_temp, soil_humidity, air_1,  air_2) values
-              (%(data.timeUTC)s, %(data.tempF)s, %(data.pressureMillibar)s,
-              %(data.temperatureDHT)s, %(data.humidityDHT)s, %(data.light)s,
-              %(data.winddir)s, %(data.windspeed)s, %(data.rain)s,
-              %(data.soiltemp)s, %(data.soilmoisture)s, %(data.air1)s,
-              %(data.air2)s)"""
+              (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        insertdata = (data.timeUTC, data.tempF, data.pressureMillibar,
+                      data.temperatureDHT, data.humidityDHT, data.light,
+                      data.winddir, data.windspeed, data.rain,
+                      data.soiltemp, data.soilmoisture, data.air1,
+                      data.air2)
 
         try:
-            cursor.execute(sql, (data))
+            cursor.execute(sql, insertdata)
             conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
