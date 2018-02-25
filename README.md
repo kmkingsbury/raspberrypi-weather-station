@@ -36,6 +36,16 @@ Key| Type | Description | Default
   ]
 }
 ```
+# Pi Setup
+- apt-get update
+- apt-get upgrade
+- apt-get dist-upgrade
+- apt-get autoremove
+- Turn on Interfacing Options:
+    - SPI
+    - I2C
+    - 1-wire
+
 
 # Python Packages
 - sudo apt-get install libyaml-dev
@@ -43,8 +53,24 @@ Key| Type | Description | Default
 - pip3 install structlog
 - pip3 install numpy
 - sudo apt-get install build-essential python-dev python3-dev
+- sudo pip install psycopg2
+
+# Postgresql Setup
+- apt install postgresql libpq-dev postgresql-client postgresql-client-common
+- sudo update-rc.d postgresql enable
+- sudo su postgres
+- createuser weatherstation -P --interactive
+- createdb weatherstation
+- create table using structure.sql
+- GRANT ALL PRIVILEGES ON TABLE weatherdata TO weatherstation;
 
 # 3rd Party Sensor Modules:
+Add SSH key:
+```
+eval $(ssh-agent -s)
+ssh-add ~/.ssh/other_id_rsa
+```
+Checkout Modules, run sudo python setup.py install
 ```
 git clone https://github.com/PrzemoF/bmp183.git
 git clone git://gist.github.com/3151375.git

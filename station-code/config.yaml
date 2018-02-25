@@ -19,15 +19,15 @@ air2:
 
 soilmoisture:
   use: True
-  analog-ch: 2
+  analog-ch: 4
 
 winddir:
   use: True
-  analog-ch: 3
+  analog-ch: 6
 
 lightresistor:
   use: True
-  analog-ch: 4
+  analog-ch: 3
 
 bmp183:
   use: True
