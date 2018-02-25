@@ -126,6 +126,54 @@ class WeatherData:
             self._air1 = 0.0
 
     @property
+    def light(self):
+        """getting"""
+        return self._light
+
+    @light.setter
+    def light(self, value):
+        if value is not None and 0.0 <= value <= 1024.0:
+            self._light = value
+        else:
+            self._light = 0.0
+
+    @property
+    def winddir(self):
+        """getting"""
+        return self._winddir
+
+    @winddir.setter
+    def winddir(self, value):
+        if value is not None and 0.0 <= value <= 1024.0:
+            self._winddir = value
+        else:
+            self._winddir = 0.0
+
+    @property
+    def windspeed(self):
+        """getting"""
+        return self._windspeed
+
+    @windspeed.setter
+    def windspeed(self, value):
+        if value is not None and 0.0 <= value <= 1024.0:
+            self._windspeed = value
+        else:
+            self._windspeed = 0.0
+
+    @property
+    def rain(self):
+        """getting"""
+        return self._rain
+
+    @rain.setter
+    def rain(self, value):
+        if value is not None and 0.0 <= value <= 1024.0:
+            self._rain = value
+        else:
+            self._rain = 0.0
+
+    @property
     def air2(self):
         """getting"""
         return self._air2
@@ -142,6 +190,13 @@ class WeatherData:
         """getting"""
         return self._soiltemp
 
+    @soiltemp.setter
+    def soiltemp(self, value):
+        if value is not None and -40.0 <= value <= 124.0:
+            self._soiltemp = value
+        else:
+            self._soiltemp = 0.0
+
     @property
     def soilmoisture(self):
         """getting"""
@@ -153,13 +208,6 @@ class WeatherData:
             self._soilmoisture = value
         else:
             self._soilmoisture = 0.0
-
-    @soiltemp.setter
-    def soiltemp(self, value):
-        if value is not None and -40.0 <= value <= 124.0:
-            self._soiltemp = value
-        else:
-            self._soiltemp = 0.0
 
     @property
     def dataformatversion(self):
@@ -225,8 +273,8 @@ class WeatherData:
     def describedata(self, v=None):
         v = v or self._dataformatversion
         if v == 1:
-            return ["Timestamp UTC", "1-wire Temp F", "BMP Temp F", 
-		    "BMP Pressure Millibar", "DHT Temp C", "DHT Humidity %",  
+            return ["Timestamp UTC", "1-wire Temp F", "BMP Temp F",
+                    "BMP Pressure Millibar", "DHT Temp C", "DHT Humidity %",
                     "Light Count", "Winddir ", "Windspeed Count", "Rain Count"]
         else:
             return [v]
@@ -266,17 +314,17 @@ if __name__ == '__main__':
     # dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
     #                    ".csv", WeatherData().describedata())
     try:
-        connect_str = "dbname='weatherstation' user='weatherstation' host='127.0.0.1' " + \
-                  "password='weatherstation'"
+        connect_str = "dbname='weatherstation' user='weatherstation' " + \
+                  "host='127.0.0.1' password='weatherstation'"
         # use our connection values to establish a connection
         conn = psycopg2.connect(connect_str)
-        
+
         # create a psycopg2 cursor that can execute queries
         cursor = conn.cursor()
-        
+
         # create a new table with a single column called "name"
         # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
-        
+
         # run a SELECT statement - no data in there, but we can try it
         # cursor.execute("""SELECT * from weatherdata""")
         # rows = cursor.fetchall()
@@ -305,7 +353,7 @@ if __name__ == '__main__':
     datalast = None
     while True:
         start = datetime.datetime.now()
-        
+
         # print(sorted(list(data._dumprow)))
         bmp.measure_pressure()
         data = WeatherData(bmp.temperature, bmp.pressure)
@@ -345,10 +393,18 @@ if __name__ == '__main__':
         # Output:
         print("Data:")
         print(list(data.exportdata()))
-        sql = """INSERT into weatherdata (measurement, bmp_temp_f, bmp_pressuer_millibar, dht_temp_c, dht_humidity_perc, light_reading, wind_dir_value, wind_speed_count, rain_count, soil_temp, soil_humidity, air_1,  air_2) values (%(data.timeUTC)s, %(data.tempF)s, %(data.pressureMillibar)s, %(data.temperatureDHT)s, %(data.humidityDHT)s, %(data.light)s, %(data.winddir)s, %(data.windspeed)s, %(data.rain)s, %(data.soiltemp)s, %(data.soilmoisture)s, %(data.air1)s, %(data.air2)s)""" 
-       
+        sql = """INSERT into weatherdata (measurement, bmp_temp_f,
+              bmp_pressuer_millibar, dht_temp_c, dht_humidity_perc,
+              light_reading, wind_dir_value, wind_speed_count, rain_count,
+              soil_temp, soil_humidity, air_1,  air_2) values
+              (%(data.timeUTC)s, %(data.tempF)s, %(data.pressureMillibar)s,
+              %(data.temperatureDHT)s, %(data.humidityDHT)s, %(data.light)s,
+              %(data.winddir)s, %(data.windspeed)s, %(data.rain)s,
+              %(data.soiltemp)s, %(data.soilmoisture)s, %(data.air1)s,
+              %(data.air2)s)"""
+
         try:
-            cursor.execute(sql, ( data ))
+            cursor.execute(sql, (data))
             conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
