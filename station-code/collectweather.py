@@ -13,6 +13,7 @@ from bmp183 import bmp183
 import Adafruit_DHT
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
+import psycopg2
 
 os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')
@@ -72,7 +73,7 @@ class StationConfig:
 class WeatherDaemon(Daemon):
     def run(self):
         while True:
-            time.sleep(.5)
+            time.sleep(.15)
 
 
 class WeatherData:
@@ -83,13 +84,16 @@ class WeatherData:
         self._pressure = p
         self._humidityDHT = 'NaN'
         self._temperatureDHT = 'NaN'
+        self._ds18b20temp = 'NaN'
         self._light = 0
         self._winddir = 0
         self._windspeed = 0
         self._rain = 0
         self._air1 = 0
         self._air2 = 0
-        self._dataformatversion = 0.1
+        self._soiltemp = 0
+        self._soilmoisture = 0
+        self._dataformatversion = 1
         self._DHTsuccess = 0
 
     @property
@@ -110,9 +114,69 @@ class WeatherData:
         return "%0.2f" % ((self._pressure/3389.39),)
 
     @property
+    def air1(self):
+        """getting"""
+        return self._air1
+
+    @air1.setter
+    def air1(self, value):
+        if value is not None and 0.0 <= value <= 1024.0:
+            self._air1 = value
+        else:
+            self._air1 = 0.0
+
+    @property
+    def air2(self):
+        """getting"""
+        return self._air2
+
+    @air2.setter
+    def air2(self, value):
+        if value is not None and 0.0 <= value <= 1024.0:
+            self._air2 = value
+        else:
+            self._air2 = 0.0
+
+    @property
+    def soiltemp(self):
+        """getting"""
+        return self._soiltemp
+
+    @property
+    def soilmoisture(self):
+        """getting"""
+        return self._soilmoisture
+
+    @soilmoisture.setter
+    def soilmoisture(self, value):
+        if value is not None and 0.0 <= value <= 1024.0:
+            self._soilmoisture = value
+        else:
+            self._soilmoisture = 0.0
+
+    @soiltemp.setter
+    def soiltemp(self, value):
+        if value is not None and -40.0 <= value <= 124.0:
+            self._soiltemp = value
+        else:
+            self._soiltemp = 0.0
+
+    @property
     def dataformatversion(self):
         """getting"""
         return self._dataformatversion
+
+    @property
+    def ds18b20temp(self):
+        """getting"""
+        return self._ds18b20temp
+
+    @ds18b20temp.setter
+    def ds18b20temp(self, value):
+        if value is not None and 0.0 <= value <= 200.0:
+            self._ds18b20temp = value
+        else:
+            self._ds18b20temp = 0.0
 
     @property
     def humidityDHT(self):
@@ -149,7 +213,7 @@ class WeatherData:
         return "%0.1f" % (self._temp,)
 
     def exportdata(self):
-        return [str(self.timeUTC), self.tempF,
+        return [str(self.timeUTC), self.ds18b20temp, self.tempF,
                 self.pressureMillibar, self.temperatureDHT,
                 self.humidityDHT, self._light, self._winddir,
                 self._windspeed, self._rain]
@@ -160,24 +224,26 @@ class WeatherData:
 
     def describedata(self, v=None):
         v = v or self._dataformatversion
-        if v == 0.1:
-            return ["Timestamp UTC",  "BMP Temp F", "BMP Pressure Millibar",
-                    "DHT Temp C", "DHT Humidity %",  "Light Count", "Winddir ",
-                    "Windspeed Count", "Rain Count"]
+        if v == 1:
+            return ["Timestamp UTC", "1-wire Temp F", "BMP Temp F", 
+		    "BMP Pressure Millibar", "DHT Temp C", "DHT Humidity %",  
+                    "Light Count", "Winddir ", "Windspeed Count", "Rain Count"]
         else:
             return [v]
 
+    @staticmethod
     def ds18b20_read_temp_raw():
         f = open(device_file, 'r')
         lines = f.readlines()
         f.close()
         return lines
 
-    def ds18b20_read_temp(self):
-        lines = self.ds18b20_read_temp_raw()
+    @staticmethod
+    def ds18b20_read_temp():
+        lines = WeatherData.ds18b20_read_temp_raw()
         while lines[0].strip()[-3:] != 'YES':
-            time.sleep(0.2)
-            lines = self.ds18b20_read_temp_raw()
+            time.sleep(0.1)
+            lines = WeatherData.ds18b20_read_temp_raw()
         equals_pos = lines[1].find('t=')
         if equals_pos != -1:
             temp_string = lines[1][equals_pos+2:]
@@ -197,8 +263,27 @@ if __name__ == '__main__':
 
     logger.info("Getting Data Ready:")
     # Get our CSV Writer ready, pass in the Data Header for 1st line
-    dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
-                        ".csv", WeatherData().describedata())
+    # dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
+    #                    ".csv", WeatherData().describedata())
+    try:
+        connect_str = "dbname='weatherstation' user='weatherstation' host='127.0.0.1' " + \
+                  "password='weatherstation'"
+        # use our connection values to establish a connection
+        conn = psycopg2.connect(connect_str)
+        
+        # create a psycopg2 cursor that can execute queries
+        cursor = conn.cursor()
+        
+        # create a new table with a single column called "name"
+        # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
+        
+        # run a SELECT statement - no data in there, but we can try it
+        # cursor.execute("""SELECT * from weatherdata""")
+        # rows = cursor.fetchall()
+        # print("fetch all: " + str(rows))
+    except Exception as e:
+        print("Uh oh, can't connect. Invalid dbname, user or password?")
+        print(e)
 
     # Sensors
     logger.info("Getting Sensors Ready:")
@@ -219,7 +304,8 @@ if __name__ == '__main__':
 
     datalast = None
     while True:
-
+        start = datetime.datetime.now()
+        
         # print(sorted(list(data._dumprow)))
         bmp.measure_pressure()
         data = WeatherData(bmp.temperature, bmp.pressure)
@@ -228,9 +314,10 @@ if __name__ == '__main__':
         print("Pressure : " + data.pressureMillibar + " millibar")
         print("Pressure : " + data.pressureInchesHG + " inches-Hg")
 
-        print("1-wire temp:" + data.ds18b20_read_temp())
+        (tempc, data.ds18b20temp) = data.ds18b20_read_temp()
+        print("1-wire temp: " + str(data.ds18b20temp))
 
-        humidity, temperature = Adafruit_DHT.read(11, 6)
+        humidity, temperature = Adafruit_DHT.read(11, 5)
         if humidity is not None and temperature is not None:
             print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(
                 temperature, humidity))
@@ -249,19 +336,32 @@ if __name__ == '__main__':
             # of the specified channel (0-7).
             values[i] = mcp.read_adc(i)
         # Print the ADC values.
-        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*range(8)))
+        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
+ {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*range(8)))
         print('-' * 57)
-        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} | {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*values))
+        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
+ {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*values))
 
         # Output:
         print("Data:")
         print(list(data.exportdata()))
-        dataout.writedata(data.exportdata(), data.day())
-        print("Day: " + str(data.day()))
+        sql = """INSERT into weatherdata (measurement, bmp_temp_f, bmp_pressuer_millibar, dht_temp_c, dht_humidity_perc, light_reading, wind_dir_value, wind_speed_count, rain_count, soil_temp, soil_humidity, air_1,  air_2) values (%(data.timeUTC)s, %(data.tempF)s, %(data.pressureMillibar)s, %(data.temperatureDHT)s, %(data.humidityDHT)s, %(data.light)s, %(data.winddir)s, %(data.windspeed)s, %(data.rain)s, %(data.soiltemp)s, %(data.soilmoisture)s, %(data.air1)s, %(data.air2)s)""" 
+       
+        try:
+            cursor.execute(sql, ( data ))
+            conn.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+        # dataout.writedata(data.exportdata(), data.day())
+        # print("Day: " + str(data.day()))
         # print ("Desc: ")
         # print(data.describedata())
         datalast = data
-        time.sleep(0.25)
+        # time.sleep(0.15)
+        now = datetime.datetime.now()
+        print("Start Sec: " + str(start.second) + " " + str(start.microsecond))
+        print("Now   Sec: " + str(now.second) + " " + str(now.microsecond))
+
     exit(0)
 
     daemon = WeatherDaemon('/tmp/weatherdaemon.pid')
