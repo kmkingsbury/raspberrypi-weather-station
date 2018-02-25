@@ -73,7 +73,7 @@ class StationConfig:
 class WeatherDaemon(Daemon):
     def run(self):
         while True:
-            time.sleep(.15)
+            time.sleep(.05)
 
 
 class WeatherData:
@@ -82,16 +82,15 @@ class WeatherData:
         self._timestamp = datetime.datetime.utcnow()
         self._temp = t
         self._pressure = p
-        self._humidityDHT = 'NaN'
-        self._temperatureDHT = 'NaN'
-        self._ds18b20temp = 'NaN'
+        self._humidityDHT = None
+        self._temperatureDHT = None
+        self._ds18b20temp = None
         self._light = 0
         self._winddir = 0
         self._windspeed = 0
         self._rain = 0
         self._air1 = 0
         self._air2 = 0
-        self._soiltemp = 0
         self._soilmoisture = 0
         self._dataformatversion = 1
         self._DHTsuccess = 0
@@ -186,18 +185,6 @@ class WeatherData:
             self._air2 = 0.0
 
     @property
-    def soiltemp(self):
-        """getting"""
-        return self._soiltemp
-
-    @soiltemp.setter
-    def soiltemp(self, value):
-        if value is not None and -40.0 <= value <= 124.0:
-            self._soiltemp = value
-        else:
-            self._soiltemp = 0.0
-
-    @property
     def soilmoisture(self):
         """getting"""
         return self._soilmoisture
@@ -221,8 +208,8 @@ class WeatherData:
 
     @ds18b20temp.setter
     def ds18b20temp(self, value):
-        if value is not None and 0.0 <= value <= 200.0:
-            self._ds18b20temp = value
+        if value is not None and -40.0 <= value <= 200.0:
+            self._ds18b20temp = "%0.2f" % (value,)
         else:
             self._ds18b20temp = 0.0
 
@@ -245,8 +232,9 @@ class WeatherData:
 
     @temperatureDHT.setter
     def temperatureDHT(self, value):
+        # Store in F, so convert from C:
         if value is not None and 0.0 <= value <= 200.0:
-            self._temperatureDHT = value
+            self._temperatureDHT = "%0.2f" % ((value*1.8)+32,)
         else:
             self._temperatureDHT = 0.0
 
@@ -261,10 +249,11 @@ class WeatherData:
         return "%0.1f" % (self._temp,)
 
     def exportdata(self):
-        return [str(self.timeUTC), self.ds18b20temp, self.tempF,
-                self.pressureMillibar, self.temperatureDHT,
-                self.humidityDHT, self._light, self._winddir,
-                self._windspeed, self._rain]
+        return [self.timeUTC, self.tempF, self.pressureMillibar,
+                      self.temperatureDHT, self.humidityDHT, self.light,
+                      self.winddir, self.windspeed, self.rain,
+                      self.ds18b20temp, self.soilmoisture, self.air1,
+                      self.air2, self.dataformatversion]
 
     def day(self):
         s = self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -273,9 +262,10 @@ class WeatherData:
     def describedata(self, v=None):
         v = v or self._dataformatversion
         if v == 1:
-            return ["Timestamp UTC", "1-wire Temp F", "BMP Temp F",
-                    "BMP Pressure Millibar", "DHT Temp C", "DHT Humidity %",
-                    "Light Count", "Winddir ", "Windspeed Count", "Rain Count"]
+            return ["Timestamp UTC", "BMP Temp F", "BMP Pressure Millibar", 
+                    "DHT Temp C", "DHT Humidity %", "Light Count", 
+                    "Winddir ", "Windspeed Count", "Rain Count", "Soil Temp", 
+                    "Soil Moisture", "Air Sensor 1", "Air Sensor 2", "Data Format Version"] 
         else:
             return [v]
 
@@ -290,7 +280,7 @@ class WeatherData:
     def ds18b20_read_temp():
         lines = WeatherData.ds18b20_read_temp_raw()
         while lines[0].strip()[-3:] != 'YES':
-            time.sleep(0.1)
+            time.sleep(0.02)
             lines = WeatherData.ds18b20_read_temp_raw()
         equals_pos = lines[1].find('t=')
         if equals_pos != -1:
@@ -358,24 +348,24 @@ if __name__ == '__main__':
         bmp.measure_pressure()
         data = WeatherData(bmp.temperature, bmp.pressure)
         print("Temperature: " + data.tempF + " deg F")
-        print("Temperature: " + data.tempC + " deg C")
+        # print("Temperature: " + data.tempC + " deg C")
         print("Pressure : " + data.pressureMillibar + " millibar")
-        print("Pressure : " + data.pressureInchesHG + " inches-Hg")
+        # print("Pressure : " + data.pressureInchesHG + " inches-Hg")
 
         (tempc, data.ds18b20temp) = data.ds18b20_read_temp()
         print("1-wire temp: " + str(data.ds18b20temp))
 
         humidity, temperature = Adafruit_DHT.read(11, 5)
         if humidity is not None and temperature is not None:
+            data.humidityDHT = humidity
+            data.temperatureDHT = temperature 
             print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(
                 temperature, humidity))
         else:
-            if datalast is not None:
-                humidity = datalast.humidityDHT
-                temperature = datalast.temperatureDHT
+            # if datalast is not None:
+            #    humidity = datalast.humidityDHT
+            #    temperature = datalast.temperatureDHT
             print('Failed to get reading. Try again!')
-        data.temperatureDHT = temperature
-        data.humidityDHT = humidity
 
         # Analog Readings
         values = [0]*8
@@ -389,20 +379,21 @@ if __name__ == '__main__':
         print('-' * 57)
         print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
  {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*values))
+        
+        data.air1 = values[cfg.configs['air1']['analog-ch']]
+        data.air2 = values[cfg.configs['air2']['analog-ch']]
+        data.light = values[cfg.configs['lightresistor']['analog-ch']]
+        data.soilmoisture = values[cfg.configs['soilmoisture']['analog-ch']]
 
         # Output:
         print("Data:")
         print(list(data.exportdata()))
         sql = """INSERT into weatherdata (measurement, bmp_temp_f,
-              bmp_pressuer_millibar, dht_temp_c, dht_humidity_perc,
+              bmp_pressuer_millibar, dht_temp_f, dht_humidity_perc,
               light_reading, wind_dir_value, wind_speed_count, rain_count,
-              soil_temp, soil_humidity, air_1,  air_2) values
-              (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-        insertdata = (data.timeUTC, data.tempF, data.pressureMillibar,
-                      data.temperatureDHT, data.humidityDHT, data.light,
-                      data.winddir, data.windspeed, data.rain,
-                      data.soiltemp, data.soilmoisture, data.air1,
-                      data.air2)
+              soil_temp, soil_humidity, air_1,  air_2, data_version) values
+              (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s)"""
+        insertdata = list(data.exportdata()) 
 
         try:
             cursor.execute(sql, insertdata)
