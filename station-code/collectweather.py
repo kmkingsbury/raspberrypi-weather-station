@@ -28,6 +28,16 @@ device_file = device_folder + '/w1_slave'
 #     import _thread as thread
 
 
+def windEventHandler(pin, dataobj):
+    print("handling wind speed event")
+    dataobj.windspeed()
+
+
+def rainEventHandler(pin, dataobj):
+    print("handling rain event")
+    dataobj.rain()
+
+
 class CSVWriter:
 
     def __init__(self, filename='test.csv', header=[]):
@@ -125,6 +135,24 @@ class WeatherData:
             self._air1 = 0.0
 
     @property
+    def windspeed(self):
+        """getting"""
+        return self._windspeed
+
+    @windspeed.setter
+    def windspeed(self):
+        self._windspeed += 1
+
+    @property
+    def rain(self):
+        """getting"""
+        return self._rain
+
+    @rain.setter
+    def rain(self):
+        self._rain += 1
+
+    @property
     def light(self):
         """getting"""
         return self._light
@@ -147,30 +175,6 @@ class WeatherData:
             self._winddir = value
         else:
             self._winddir = 0.0
-
-    @property
-    def windspeed(self):
-        """getting"""
-        return self._windspeed
-
-    @windspeed.setter
-    def windspeed(self, value):
-        if value is not None and 0.0 <= value <= 1024.0:
-            self._windspeed = value
-        else:
-            self._windspeed = 0.0
-
-    @property
-    def rain(self):
-        """getting"""
-        return self._rain
-
-    @rain.setter
-    def rain(self, value):
-        if value is not None and 0.0 <= value <= 1024.0:
-            self._rain = value
-        else:
-            self._rain = 0.0
 
     @property
     def air2(self):
@@ -250,10 +254,10 @@ class WeatherData:
 
     def exportdata(self):
         return [self.timeUTC, self.tempF, self.pressureMillibar,
-                      self.temperatureDHT, self.humidityDHT, self.light,
-                      self.winddir, self.windspeed, self.rain,
-                      self.ds18b20temp, self.soilmoisture, self.air1,
-                      self.air2, self.dataformatversion]
+                self.temperatureDHT, self.humidityDHT, self.light,
+                self.winddir, self.windspeed, self.rain,
+                self.ds18b20temp, self.soilmoisture, self.air1,
+                self.air2, self.dataformatversion]
 
     def day(self):
         s = self._timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -262,10 +266,11 @@ class WeatherData:
     def describedata(self, v=None):
         v = v or self._dataformatversion
         if v == 1:
-            return ["Timestamp UTC", "BMP Temp F", "BMP Pressure Millibar", 
-                    "DHT Temp C", "DHT Humidity %", "Light Count", 
-                    "Winddir ", "Windspeed Count", "Rain Count", "Soil Temp", 
-                    "Soil Moisture", "Air Sensor 1", "Air Sensor 2", "Data Format Version"] 
+            return ["Timestamp UTC", "BMP Temp F", "BMP Pressure Millibar",
+                    "DHT Temp C", "DHT Humidity %", "Light Count",
+                    "Winddir ", "Windspeed Count", "Rain Count", "Soil Temp",
+                    "Soil Moisture", "Air Sensor 1",
+                    "Air Sensor 2", "Data Format Version"]
         else:
             return [v]
 
@@ -340,6 +345,17 @@ if __name__ == '__main__':
     SPI_DEVICE = 0
     mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
+    GPIO.setup(cfg.configs['windspeed']['pin'], GPIO.IN,
+               pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(cfg.configs['raingauge']['pin'], GPIO.IN,
+               pull_up_down=GPIO.PUD_UP)
+
+    GPIO.add_event_detect(cfg.configs['windspeed']['pin'], GPIO.FALLING)
+    GPIO.add_event_callback(cfg.configs['windspeed']['pin'], windEventHandler)
+
+    GPIO.add_event_detect(cfg.configs['windspeed']['pin'], GPIO.FALLING)
+    GPIO.add_event_callback(cfg.configs['windspeed']['pin'], rainEventHandler)
+
     datalast = None
     while True:
         start = datetime.datetime.now()
@@ -358,7 +374,7 @@ if __name__ == '__main__':
         humidity, temperature = Adafruit_DHT.read(11, 5)
         if humidity is not None and temperature is not None:
             data.humidityDHT = humidity
-            data.temperatureDHT = temperature 
+            data.temperatureDHT = temperature
             print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(
                 temperature, humidity))
         else:
@@ -379,7 +395,7 @@ if __name__ == '__main__':
         print('-' * 57)
         print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
  {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*values))
-        
+
         data.air1 = values[cfg.configs['air1']['analog-ch']]
         data.air2 = values[cfg.configs['air2']['analog-ch']]
         data.light = values[cfg.configs['lightresistor']['analog-ch']]
@@ -393,7 +409,7 @@ if __name__ == '__main__':
               light_reading, wind_dir_value, wind_speed_count, rain_count,
               soil_temp, soil_humidity, air_1,  air_2, data_version) values
               (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s)"""
-        insertdata = list(data.exportdata()) 
+        insertdata = list(data.exportdata())
 
         try:
             cursor.execute(sql, insertdata)

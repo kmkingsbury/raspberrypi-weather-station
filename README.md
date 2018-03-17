@@ -63,6 +63,7 @@ Key| Type | Description | Default
 - createdb weatherstation
 - create table using structure.sql
 - GRANT ALL PRIVILEGES ON TABLE weatherdata TO weatherstation;
+- https://www.howtoforge.com/tutorial/postgresql-replication-on-ubuntu-15-04/
 
 # 3rd Party Sensor Modules:
 Add SSH key:

@@ -25,6 +25,14 @@ winddir:
   use: True
   analog-ch: 6
 
+windspeed:
+  use: True
+  pin: 38
+
+raingauge:
+  use: True
+  pin: 39
+
 lightresistor:
   use: True
   analog-ch: 3
