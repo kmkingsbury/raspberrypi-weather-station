@@ -56,6 +56,7 @@ Key| Type | Description | Default
 - sudo pip install psycopg2
 
 # Postgresql Setup
+- sudo apt-get install postgresql-9.6
 - apt install postgresql libpq-dev postgresql-client postgresql-client-common
 - sudo update-rc.d postgresql enable
 - sudo su postgres
