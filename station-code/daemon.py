@@ -103,7 +103,7 @@ class Daemon:
         try:
             while 1:
                 os.kill(pid, signal.SIGTERM)
-                time.sleep(0.1)
+                time.sleep(0.0001)
         except OSError as err:
             e = str(err.args)
             if e.find("No such process") > 0:

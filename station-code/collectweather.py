@@ -28,46 +28,88 @@ device_file = device_folder + '/w1_slave'
 #     import _thread as thread
 
 
-def windEventHandler(pin, dataobj):
-    print("handling wind speed event")
-    dataobj.windspeed()
+def windEventHandler(pin):
+    # print("handling wind speed event")
+    data.windspeed += 1
 
 
-def rainEventHandler(pin, dataobj):
-    print("handling rain event")
-    dataobj.rain()
+def rainEventHandler(pin):
+    # print("handling rain event")
+    global lastrainevent
+    now = datetime.datetime.now()
+    diff = (now-lastrainevent).total_seconds()
+    if (diff > 0.25):
+        data.rain += 1
+    lastrainevent = datetime.datetime.now()
 
 
 class CSVWriter:
 
     def __init__(self, filename='test.csv', header=[]):
+        print("CSV init")
         newfile = False
         self._header = header
+        self._fileday = None
+        self._filename = filename
         outfile = Path(filename)
         if not outfile.is_file():
             # File doesn't exist, will be created, print header too
+            print("CSV init file not exist")
             newfile = True
         self.fn = open(filename, 'a')
-        self._day = int(datetime.date.today().day)
-        print("Date:" + str(self._day))
+        self.fileday = int(datetime.datetime.utcnow().day)
+        # print("CSV Date:" + str(self._day))
         self.csv = csv.writer(self.fn, delimiter=',')
-        print("Size" + str(len(header)))
+        # print("Size" + str(len(header)))
         if newfile:
             # new file so print header
+            print("CSV init print header")
             self.csv.writerow(self._header)
 
-    def writedata(self, dataobj, day):
-        if (self._day != day):
-            dt = datetime.date.today()
+    def writedata(self, dataobj):
+        print("CSV write")
+        day = int(dataobj[0][8:10])  # parse string of 1st arrat item
+        if (int(self.fileday) != int(day)):
+            global dataout
+            print("CSV not equal ")
+            # usually at 11:59 so UTCnow will get next day.
+            dt = datetime.datetime.utcnow()
             filename = "data-"+dt.strftime("%Y-%m-%d") + ".csv"
-            self.fn.close()
-            self = CSVWriter(filename, self._header)
-            self.csv.writerow(self._header)
-            self._day = int(datetime.date.today().day)
+            print("Newfile: " + filename)
+            print("Self Day vs Arg Day:" + str(self.fileday) + "-" + str(day))
+            dataout.fn.close()
+            print("CSV after close")
+            dataout = CSVWriter(filename, self._header)
+            print("CSV new self")
+            dataout.fileday = int(day)
+            # self.csv.writerow(self._header)
+            # self.fileday = int(datetime.datetime.utcnow().day)
+            # self._day = int(datetime.datetime.utcnow().day)
+        print("CSV writerow")
         self.csv.writerow(dataobj)
 
+        print("After:" + str(self.fileday))
+        self.fn.flush()
+        # print("csv write")
+
     def __del__(self):
+        print("CSV Del")
         self.fn.close()
+
+    @property
+    def fileday(self):
+        # Day of Month for rotating CSV file
+        """getting"""
+        print("Fileday get")
+        return int(self._fileday)
+
+    @fileday.setter
+    def fileday(self, value):
+        print("Fileday setter: "+str(value))
+        if int(value) is not None and 0 <= int(value) <= 31:
+            self._fileday = int(value)
+        else:
+            self._fileday = None
 
 
 class StationConfig:
@@ -83,15 +125,16 @@ class StationConfig:
 class WeatherDaemon(Daemon):
     def run(self):
         while True:
-            time.sleep(.05)
+            time.sleep(.001)
 
 
 class WeatherData:
 
-    def __init__(self, t=0, p=0):
+    def __init__(self):
         self._timestamp = datetime.datetime.utcnow()
-        self._temp = t
-        self._pressure = p
+        self._tdelta = 0.00
+        self._temp = 0
+        self._pressure = 0
         self._humidityDHT = None
         self._temperatureDHT = None
         self._ds18b20temp = None
@@ -123,6 +166,19 @@ class WeatherData:
         return "%0.2f" % ((self._pressure/3389.39),)
 
     @property
+    def pressure(self):
+        # Raw is Pascals
+        """getting"""
+        return "%0.2f" % (self._pressure)
+
+    @pressure.setter
+    def pressure(self, value):
+        if value is not None and 0.0 <= value <= 100000.0:
+            self._pressure = value
+        else:
+            self._pressure = 0.0
+
+    @property
     def air1(self):
         """getting"""
         return self._air1
@@ -140,7 +196,7 @@ class WeatherData:
         return self._windspeed
 
     @windspeed.setter
-    def windspeed(self):
+    def windspeed(self, throwaway):
         self._windspeed += 1
 
     @property
@@ -149,7 +205,7 @@ class WeatherData:
         return self._rain
 
     @rain.setter
-    def rain(self):
+    def rain(self, throwaway):
         self._rain += 1
 
     @property
@@ -243,6 +299,11 @@ class WeatherData:
             self._temperatureDHT = 0.0
 
     @property
+    def temp(self):
+        """getting"""
+        return "%0.1f" % (self._temp)
+
+    @property
     def tempF(self):
         """getting"""
         return "%0.1f" % ((self._temp*1.8)+32,)
@@ -250,13 +311,34 @@ class WeatherData:
     @property
     def tempC(self):
         """getting"""
-        return "%0.1f" % (self._temp,)
+        return "%0.1f" % (self._temp)
+
+    @temp.setter
+    def temp(self, value):
+        # Store in F, so convert from C:
+        if value is not None and 0.0 <= value <= 200.0:
+            self._temp = value
+        else:
+            self._temp = 0.0
+
+    @property
+    def tdelta(self):
+        """getting"""
+        return "%0.2f" % (self._tdelta)
+
+    @tdelta.setter
+    def tdelta(self, value):
+        # Store in F, so convert from C:
+        if value is not None and 0.00 <= value <= 200.00:
+            self._tdelta = value
+        else:
+            self._tdelta = 0.00
 
     def exportdata(self):
-        return [self.timeUTC, self.tempF, self.pressureMillibar,
+        return [self.timeUTC, self.tdelta, self.tempF, self.pressureMillibar,
                 self.temperatureDHT, self.humidityDHT, self.light,
-                self.winddir, self.windspeed, self.rain,
-                self.ds18b20temp, self.soilmoisture, self.air1,
+                self.winddir, self.getwinddir(self.winddir), self.windspeed,
+                self.rain, self.ds18b20temp, self.soilmoisture, self.air1,
                 self.air2, self.dataformatversion]
 
     def day(self):
@@ -266,13 +348,37 @@ class WeatherData:
     def describedata(self, v=None):
         v = v or self._dataformatversion
         if v == 1:
-            return ["Timestamp UTC", "BMP Temp F", "BMP Pressure Millibar",
-                    "DHT Temp C", "DHT Humidity %", "Light Count",
-                    "Winddir ", "Windspeed Count", "Rain Count", "Soil Temp",
-                    "Soil Moisture", "Air Sensor 1",
-                    "Air Sensor 2", "Data Format Version"]
+            return ["Timestamp UTC", "Timedelta sec", "BMP Temp F",
+                    "BMP Pressure Millibar", "DHT Temp C", "DHT Humidity %",
+                    "Light Count", "Winddir ", "Winddir Lookup",
+                    "Windspeed Count", "Rain Count", "Soil Temp",
+                    "Soil Moisture", "Air Sensor 1", "Air Sensor 2",
+                    "Data Format Version"]
         else:
             return [v]
+
+    def getwinddir(self, windreading):
+        winddirtable = {
+                        (867, 917): 'W',
+                        (816, 866): 'NW',
+                        (770, 815): 'WNW',
+                        (714, 769): 'N',
+                        (644, 713): 'NWN',
+                        (598, 643): 'SW',
+                        (521, 597): 'SWW',
+                        (431, 520): 'NE',
+                        (348, 430): 'NNE',
+                        (269, 347): 'S',
+                        (218, 268): 'SSW',
+                        (159, 217): 'SE',
+                        (112, 158): 'SES',
+                        (90, 112): 'E',
+                        (76, 89): 'NEE',
+                        (33, 75): 'ESE'
+                        }
+        for key in winddirtable:
+            if key[0] < windreading < key[1]:
+                return winddirtable[key]
 
     @staticmethod
     def ds18b20_read_temp_raw():
@@ -285,7 +391,7 @@ class WeatherData:
     def ds18b20_read_temp():
         lines = WeatherData.ds18b20_read_temp_raw()
         while lines[0].strip()[-3:] != 'YES':
-            time.sleep(0.02)
+            time.sleep(0.001)
             lines = WeatherData.ds18b20_read_temp_raw()
         equals_pos = lines[1].find('t=')
         if equals_pos != -1:
@@ -306,8 +412,9 @@ if __name__ == '__main__':
 
     logger.info("Getting Data Ready:")
     # Get our CSV Writer ready, pass in the Data Header for 1st line
-    # dataout = CSVWriter("data-"+datetime.date.today().strftime("%Y-%m-%d") +
-    #                    ".csv", WeatherData().describedata())
+    dataout = CSVWriter("data-" +
+                        datetime.datetime.utcnow().strftime("%Y-%m-%d") +
+                        ".csv", WeatherData().describedata())
     try:
         connect_str = "dbname='weatherstation' user='weatherstation' " + \
                   "host='127.0.0.1' password='weatherstation'"
@@ -345,6 +452,8 @@ if __name__ == '__main__':
     SPI_DEVICE = 0
     mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
+    data = WeatherData()
+    lastrainevent = datetime.datetime.now()
     GPIO.setup(cfg.configs['windspeed']['pin'], GPIO.IN,
                pull_up_down=GPIO.PUD_UP)
     GPIO.setup(cfg.configs['raingauge']['pin'], GPIO.IN,
@@ -353,30 +462,31 @@ if __name__ == '__main__':
     GPIO.add_event_detect(cfg.configs['windspeed']['pin'], GPIO.FALLING)
     GPIO.add_event_callback(cfg.configs['windspeed']['pin'], windEventHandler)
 
-    GPIO.add_event_detect(cfg.configs['windspeed']['pin'], GPIO.FALLING)
-    GPIO.add_event_callback(cfg.configs['windspeed']['pin'], rainEventHandler)
+    GPIO.add_event_detect(cfg.configs['raingauge']['pin'], GPIO.FALLING)
+    GPIO.add_event_callback(cfg.configs['raingauge']['pin'], rainEventHandler)
 
-    datalast = None
+    # datalast = None
     while True:
         start = datetime.datetime.now()
 
         # print(sorted(list(data._dumprow)))
         bmp.measure_pressure()
-        data = WeatherData(bmp.temperature, bmp.pressure)
-        print("Temperature: " + data.tempF + " deg F")
+        data.temp = bmp.temperature
+        data.pressure = bmp.pressure
+        # print("Temperature: " + data.tempF + " deg F")
         # print("Temperature: " + data.tempC + " deg C")
-        print("Pressure : " + data.pressureMillibar + " millibar")
+        # print("Pressure : " + data.pressureMillibar + " millibar")
         # print("Pressure : " + data.pressureInchesHG + " inches-Hg")
 
         (tempc, data.ds18b20temp) = data.ds18b20_read_temp()
-        print("1-wire temp: " + str(data.ds18b20temp))
+        # print("1-wire temp: " + str(data.ds18b20temp))
 
         humidity, temperature = Adafruit_DHT.read(11, 5)
         if humidity is not None and temperature is not None:
             data.humidityDHT = humidity
             data.temperatureDHT = temperature
-            print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(
-                temperature, humidity))
+            # print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(
+            #    temperature, humidity))
         else:
             # if datalast is not None:
             #    humidity = datalast.humidityDHT
@@ -384,31 +494,41 @@ if __name__ == '__main__':
             print('Failed to get reading. Try again!')
 
         # Analog Readings
-        values = [0]*8
-        for i in range(8):
+        values = [0]*5
+        for i in range(5):
             # The read_adc function will get the value
             # of the specified channel (0-7).
             values[i] = mcp.read_adc(i)
         # Print the ADC values.
-        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
- {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*range(8)))
-        print('-' * 57)
-        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
- {4:>4} | {5:>4} | {6:>4} | {7:>4} |'.format(*values))
+        # print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
+# {4:>4} '.format(*range(8)))
+#        print('-' * 57)
+#        print('| {0:>4} | {1:>4} | {2:>4} | {3:>4} |\
+# {4:>4} '.format(*values))
 
         data.air1 = values[cfg.configs['air1']['analog-ch']]
         data.air2 = values[cfg.configs['air2']['analog-ch']]
         data.light = values[cfg.configs['lightresistor']['analog-ch']]
         data.soilmoisture = values[cfg.configs['soilmoisture']['analog-ch']]
-
+        data.winddir = values[cfg.configs['winddir']['analog-ch']]
+        # print("Wind: " + data.getwinddir(data.winddir))
         # Output:
+        now = datetime.datetime.utcnow()
+        earlier = datetime.datetime.strptime(data.timeUTC,
+                                             '%Y-%m-%d %H:%M:%S.%f')
+        # print("St Sec: " + str(e.second) + " " + str(e.microsecond))
+        # print("Now   Sec: " + str(now.second) + " " + str(now.microsecond))
+        data.tdelta = (now - earlier).total_seconds()
+        print("Delta:" + str(data.tdelta))
         print("Data:")
         print(list(data.exportdata()))
-        sql = """INSERT into weatherdata (measurement, bmp_temp_f,
+
+        sql = """INSERT into weatherdata (measurement, tdelta, bmp_temp_f,
               bmp_pressuer_millibar, dht_temp_f, dht_humidity_perc,
-              light_reading, wind_dir_value, wind_speed_count, rain_count,
-              soil_temp, soil_humidity, air_1,  air_2, data_version) values
-              (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s)"""
+              light_reading, wind_dir_value, wind_dir_lookup,
+              wind_speed_count, rain_count, soil_temp, soil_humidity,
+              air_1,  air_2, data_version) values
+              (%s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s)"""
         insertdata = list(data.exportdata())
 
         try:
@@ -416,15 +536,17 @@ if __name__ == '__main__':
             conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
-        # dataout.writedata(data.exportdata(), data.day())
-        # print("Day: " + str(data.day()))
+            print("SQL statement:" + sql)
+            print("Data: " + str(insertdata))
+            conn.rollback()
+
+        dataout.writedata(data.exportdata())
+        # dataout.fileday = now.day
         # print ("Desc: ")
         # print(data.describedata())
-        datalast = data
+        # datalast = data
+        data = WeatherData()
         # time.sleep(0.15)
-        now = datetime.datetime.now()
-        print("Start Sec: " + str(start.second) + " " + str(start.microsecond))
-        print("Now   Sec: " + str(now.second) + " " + str(now.microsecond))
 
     exit(0)
 

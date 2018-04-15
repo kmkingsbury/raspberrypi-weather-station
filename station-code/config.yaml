@@ -19,23 +19,23 @@ air2:
 
 soilmoisture:
   use: True
-  analog-ch: 4
+  analog-ch: 2
 
 winddir:
   use: True
-  analog-ch: 6
+  analog-ch: 3
 
 windspeed:
   use: True
-  pin: 38
+  pin: 26
 
 raingauge:
   use: True
-  pin: 39
+  pin: 21
 
 lightresistor:
   use: True
-  analog-ch: 3
+  analog-ch: 4
 
 bmp183:
   use: True
