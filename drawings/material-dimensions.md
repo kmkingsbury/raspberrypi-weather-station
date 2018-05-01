@@ -1,2 +1,0 @@
-# Material Dimensions
-
