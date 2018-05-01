@@ -33,6 +33,10 @@ raingauge:
   use: True
   pin: 21
 
+lightning:
+  use: True
+  pin: 17
+
 lightresistor:
   use: True
   analog-ch: 4

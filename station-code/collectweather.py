@@ -14,6 +14,7 @@ import Adafruit_DHT
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_MCP3008
 import psycopg2
+# from RPi_AS3935 import RPi_AS3935  # for lightning, not working
 
 os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')
@@ -21,11 +22,6 @@ os.system('modprobe w1-therm')
 base_dir = '/sys/bus/w1/devices/'
 device_folder = glob.glob(base_dir + '28*')[0]
 device_file = device_folder + '/w1_slave'
-
-# try:
-#    import thread
-# except ImportError:
-#     import _thread as thread
 
 
 def windEventHandler(pin):
@@ -41,6 +37,24 @@ def rainEventHandler(pin):
     if (diff > 0.25):
         data.rain += 1
     lastrainevent = datetime.datetime.now()
+
+
+def handle_interrupt(channel):
+    time.sleep(0.003)
+    global sensor
+    reason = sensor.get_interrupt()
+    if reason == 0x01:
+        print("Noise level too high - adjusting")
+        sensor.raise_noise_floor()
+    elif reason == 0x04:
+        print("Disturber detected - masking")
+        sensor.set_mask_disturber(True)
+    elif reason == 0x08:
+        now = datetime.now().strftime('%H:%M:%S - %Y/%m/%d')
+        distance = sensor.get_distance()
+        print("We sensed lightning!")
+        print("It was " + str(distance) + "km away. (%s)" % now)
+        print("")
 
 
 class CSVWriter:
@@ -70,18 +84,18 @@ class CSVWriter:
         print("CSV write")
         day = int(dataobj[0][8:10])  # parse string of 1st arrat item
         if (int(self.fileday) != int(day)):
-            global dataout
+
             print("CSV not equal ")
             # usually at 11:59 so UTCnow will get next day.
             dt = datetime.datetime.utcnow()
             filename = "data-"+dt.strftime("%Y-%m-%d") + ".csv"
             print("Newfile: " + filename)
             print("Self Day vs Arg Day:" + str(self.fileday) + "-" + str(day))
-            dataout.fn.close()
+            self.fn.close()
             print("CSV after close")
-            dataout = CSVWriter(filename, self._header)
+            self = CSVWriter(filename, self._header)
             print("CSV new self")
-            dataout.fileday = int(day)
+            self.fileday = int(day)
             # self.csv.writerow(self._header)
             # self.fileday = int(datetime.datetime.utcnow().day)
             # self._day = int(datetime.datetime.utcnow().day)
@@ -91,6 +105,7 @@ class CSVWriter:
         print("After:" + str(self.fileday))
         self.fn.flush()
         # print("csv write")
+        return self
 
     def __del__(self):
         print("CSV Del")
@@ -452,6 +467,12 @@ if __name__ == '__main__':
     SPI_DEVICE = 0
     mcp = Adafruit_MCP3008.MCP3008(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
+    # sensor = RPi_AS3935(address=0x00, bus=1)
+
+    # sensor.set_indoors(True)
+    # sensor.set_noise_floor(0)
+    # sensor.calibrate(tun_cap=0x0F)
+
     data = WeatherData()
     lastrainevent = datetime.datetime.now()
     GPIO.setup(cfg.configs['windspeed']['pin'], GPIO.IN,
@@ -465,7 +486,10 @@ if __name__ == '__main__':
     GPIO.add_event_detect(cfg.configs['raingauge']['pin'], GPIO.FALLING)
     GPIO.add_event_callback(cfg.configs['raingauge']['pin'], rainEventHandler)
 
-    # datalast = None
+    # GPIO.setup(cfg.configs['lightning']['pin'], GPIO.IN)
+    # GPIO.add_event_detect(cfg.configs['lightning']['pin'],
+    #                       GPIO.RISING, callback=handle_interrupt)
+
     while True:
         start = datetime.datetime.now()
 
@@ -540,7 +564,7 @@ if __name__ == '__main__':
             print("Data: " + str(insertdata))
             conn.rollback()
 
-        dataout.writedata(data.exportdata())
+        dataout = dataout.writedata(data.exportdata())
         # dataout.fileday = now.day
         # print ("Desc: ")
         # print(data.describedata())
