@@ -6,50 +6,50 @@ soiltemp:
   #w1thermsensor assumes pin #4
 
 dht11:
-  use: True
+  #use: True
   data-pin: 5
 
 air1:
-  use: True
+  #use: True
   analog-ch: 0
 
 air2:
-  use: True
+  #use: True
   analog-ch: 1
 
 soilmoisture:
-  use: True
+  #use: True
   analog-ch: 2
 
 winddir:
-  use: True
+  #use: True
   analog-ch: 3
 
 windspeed:
-  use: True
+  #use: True
   pin: 26
 
 raingauge:
-  use: True
+  #use: True
   pin: 21
 
 lightning:
-  use: True
+  #use: True
   pin: 17
 
 lightresistor:
-  use: True
+  #use: True
   analog-ch: 4
 
 bmp183:
-  use: True
+  #use: True
   pin-sck: 6
   pin-sdo: 12
   pin-sdi: 16
   pin-cs: 13
 
 mcp3008:
-  use: true
+  #use: true
   pin-clk: 18
   pin-miso: 23
   pin-mosi: 24
