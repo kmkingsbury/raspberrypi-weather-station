@@ -2,6 +2,9 @@
 
 Rebuild of a Pi powered weather station. The origial I did an instructable for (https://www.instructables.com/id/Complete-DIY-Raspberry-Pi-Weather-Station-with-Sof/) this one uses all off the self parts.
 
+And wrote up a few thoughts about the project on my blog as well: 
+https://spaceman-labs.com/2018/07/raspberry-pi-weather-station-mk2/
+
 Uses a few standard sensors to track weather data:
 - Temperature - comes from 2 sensors the BMP and the DHT.
 - Soil temperature
